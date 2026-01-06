@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.pager.PagerState
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,9 +42,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,18 +52,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.expense.tracker.core.domain.models.Category
-import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
 import com.expense.tracker.ui.theme.MoneyBudgetExpenseTrackerTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 @Composable
-fun AddNewTransactionScreen(navController: NavController) {
+fun AddNewTransactionScreen(
+    navController: NavController,
+    viewModel: AddNewTransactionViewModel = hiltViewModel()
+) {
+    val uiState = viewModel.uiState
+
     Scaffold(topBar = {
         Header(
             config = HeaderConfig(
@@ -81,15 +83,28 @@ fun AddNewTransactionScreen(navController: NavController) {
             )
         )
     }) {
-        AddNewTransactionScreenContainer(Modifier.padding(it))
+        AddNewTransactionScreenContainer(
+            modifier = Modifier.padding(it),
+            uiState = uiState,
+            onTabSelected = viewModel::onTabSelected,
+            onCategorySelected = viewModel::onCategorySelected,
+            onKeyPress = viewModel::onKeyPress,
+            onNoteChange = viewModel::onNoteChange
+        )
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun AddNewTransactionScreenContainer(modifier: Modifier = Modifier) {
-    val tabs = listOf("Income", "Expenses", "Transaction")
-    val pagerState = remember { PagerState(0) { tabs.size } }
-    var showNumpad by remember { mutableStateOf(false) }
+private fun AddNewTransactionScreenContainer(
+    modifier: Modifier = Modifier,
+    uiState: AddNewTransactionUiState,
+    onTabSelected: (Int) -> Unit,
+    onCategorySelected: (Category) -> Unit,
+    onKeyPress: (String) -> Unit,
+    onNoteChange: (String) -> Unit
+) {
+    val pagerState = rememberPagerState(initialPage = uiState.selectedTabIndex) { uiState.tabs.size }
 
     Column(modifier = modifier.fillMaxSize()) {
         Box(
@@ -99,17 +114,23 @@ private fun AddNewTransactionScreenContainer(modifier: Modifier = Modifier) {
                 .padding(16.dp), contentAlignment = Alignment.Center
         ) {
             TransactionTabs(
-                tabs = tabs,
-                pagerState = pagerState
+                tabs = uiState.tabs,
+                pagerState = pagerState,
+                onTabSelected = onTabSelected
             )
         }
-        CategoryGrid(expenseCategories){
-            if (it.label.isNotBlank()) {
-                showNumpad = true
-            }
-        }
-        AnimatedVisibility(showNumpad) {
-            AddAmountScreen()
+        CategoryGrid(
+            categories = uiState.categories,
+            selectedCategory = uiState.selectedCategory,
+            onItemClick = onCategorySelected
+        )
+        AnimatedVisibility(uiState.showNumpad) {
+            AddAmountScreen(
+                amount = uiState.amount,
+                note = uiState.note,
+                onNoteChange = onNoteChange,
+                onKeyPress = onKeyPress
+            )
         }
     }
 }
@@ -119,15 +140,24 @@ private fun AddNewTransactionScreenContainer(modifier: Modifier = Modifier) {
 @Composable
 fun AddNewTransactionScreenPreview() {
     MoneyBudgetExpenseTrackerTheme {
-        AddNewTransactionScreenContainer()
+        AddNewTransactionScreenContainer(
+            uiState = AddNewTransactionUiState(),
+            onTabSelected = {},
+            onCategorySelected = {},
+            onKeyPress = {},
+            onNoteChange = {}
+        )
     }
 }
 
 
 @Composable
-fun ColumnScope.CategoryGrid(categories: List<Category>, modifier: Modifier = Modifier, onItemClick:(Category) -> Unit = {}) {
-    var selectedCategory by remember { mutableStateOf(Category()) }
-
+fun ColumnScope.CategoryGrid(
+    categories: List<Category>,
+    selectedCategory: Category,
+    modifier: Modifier = Modifier,
+    onItemClick: (Category) -> Unit
+) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
         modifier = modifier
@@ -137,8 +167,10 @@ fun ColumnScope.CategoryGrid(categories: List<Category>, modifier: Modifier = Mo
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         items(categories) { category ->
-            CategoryItem(category, isSelected = category.label == selectedCategory.label){
-                selectedCategory = category
+            CategoryItem(
+                category = category,
+                isSelected = category.label == selectedCategory.label
+            ) {
                 onItemClick(category)
             }
         }
@@ -147,7 +179,7 @@ fun ColumnScope.CategoryGrid(categories: List<Category>, modifier: Modifier = Mo
 
 @Composable
 private fun CategoryItem(category: Category, isSelected: Boolean = false, onClick: () -> Unit = {}) {
-    val backgroundColor by animateColorAsState( if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color(0xFFF2F2F2))
+    val backgroundColor by animateColorAsState(if (isSelected) MaterialTheme.colorScheme.primaryContainer else Color(0xFFF2F2F2))
 
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -159,7 +191,7 @@ private fun CategoryItem(category: Category, isSelected: Boolean = false, onClic
             Icon(
                 imageVector = category.icon,
                 contentDescription = category.label,
-                tint = Color.Gray
+                tint = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
             )
         }
 
@@ -168,7 +200,8 @@ private fun CategoryItem(category: Category, isSelected: Boolean = false, onClic
         Text(
             text = category.label,
             fontSize = 12.sp,
-            textAlign = TextAlign.Center
+            textAlign = TextAlign.Center,
+            color = if (isSelected) MaterialTheme.colorScheme.primary else Color.Gray
         )
     }
 }
@@ -178,8 +211,10 @@ private fun CategoryItem(category: Category, isSelected: Boolean = false, onClic
 @Composable
 fun TransactionTabs(
     tabs: List<String>,
-    pagerState: PagerState
+    pagerState: PagerState,
+    onTabSelected: (Int) -> Unit
 ) {
+    val scope = rememberCoroutineScope()
     Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
@@ -197,8 +232,9 @@ fun TransactionTabs(
                         if (selected) Color.Black else Color.Transparent
                     )
                     .clickable {
-                        CoroutineScope(Dispatchers.Main).launch {
+                        scope.launch {
                             pagerState.animateScrollToPage(index)
+                            onTabSelected(index)
                         }
                     }
                     .padding(vertical = 12.dp),
@@ -215,29 +251,23 @@ fun TransactionTabs(
 
 
 @Composable
-private fun AddAmountScreen(backgroundColor: Color = Color(0xFFF2F3F5)) {
-    var amount by remember { mutableStateOf("0") }
-    var note by remember { mutableStateOf("") }
-
+private fun AddAmountScreen(
+    amount: String,
+    note: String,
+    onNoteChange: (String) -> Unit,
+    onKeyPress: (String) -> Unit,
+    backgroundColor: Color = Color(0xFFF2F3F5)
+) {
     Column(
         modifier = Modifier
             .background(backgroundColor)
             .padding(16.dp)
     ) {
-
         AmountHeader(amount)
-
         Spacer(Modifier.height(16.dp))
-
-        NoteInput(note) { note = it }
-
+        NoteInput(note, onNoteChange)
         Spacer(Modifier.height(16.dp))
-
-        Keypad(
-            onKeyPress = { key ->
-                amount = handleInput(amount, key)
-            }
-        )
+        Keypad(onKeyPress = onKeyPress)
     }
 }
 
@@ -295,14 +325,6 @@ fun NoteInput(
     }
 }
 
-sealed class KeypadKey {
-    data class Text(val value: String) : KeypadKey()
-    data object Today : KeypadKey()
-    data object Add : KeypadKey()
-    data object Subtract : KeypadKey()
-    data object Delete : KeypadKey()
-    data object Confirm : KeypadKey()
-}
 val keypadKeys = listOf(
     "7", "8", "9", "Today",
     "4", "5", "6", "+",
@@ -357,14 +379,5 @@ fun KeypadButton(
 
             else -> Text(label, fontSize = 22.sp)
         }
-    }
-}
-
-fun handleInput(current: String, key: String): String {
-    return when (key) {
-        "⌫" -> if (current.length > 1) current.dropLast(1) else "0"
-        "✓" -> current
-        "+", "-", "Today" -> current
-        else -> if (current == "0") key else current + key
     }
 }

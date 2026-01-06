@@ -1,0 +1,69 @@
+
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.runtime.Composable
+import androidx.navigation.NavBackStackEntry
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+
+fun NavGraphBuilder.slideFromBottomComposable(
+    route: String,
+    duration: Int = 700,
+    content: @Composable (NavBackStackEntry) -> Unit
+) {
+    composable(
+        route = route,
+
+        enterTransition = {
+            slideInVertically(
+                initialOffsetY = { fullHeight ->
+                    fullHeight // start fully off-screen
+                },
+                animationSpec = tween(
+                    durationMillis = duration,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        },
+
+        exitTransition = {
+            slideOutVertically(
+                targetOffsetY = { fullHeight ->
+                    fullHeight
+                },
+                animationSpec = tween(
+                    durationMillis = duration,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        },
+
+        popEnterTransition = {
+            slideInVertically(
+                initialOffsetY = { fullHeight ->
+                    fullHeight
+                },
+                animationSpec = tween(
+                    durationMillis = duration,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        },
+
+        popExitTransition = {
+            slideOutVertically(
+                targetOffsetY = { fullHeight ->
+                    fullHeight
+                },
+                animationSpec = tween(
+                    durationMillis = duration,
+                    easing = FastOutSlowInEasing
+                )
+            )
+        }
+    ) { backStackEntry ->
+        content(backStackEntry)
+    }
+}

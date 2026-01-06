@@ -1,5 +1,7 @@
 package com.expense.tracker.navigation
 
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -8,11 +10,19 @@ import com.expense.tracker.feature.add.AddNewTransactionScreen
 import com.expense.tracker.feature.chart.ChartsScreen
 import com.expense.tracker.feature.home.HomeScreen
 import com.expense.tracker.feature.profile.ProfileScreen
+import slideFromBottomComposable
 
 @Composable
 fun NavGraph() {
     val navController = rememberNavController()
-    NavHost(navController, "home") {
+    NavHost(
+        navController,
+        "home",
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+        popEnterTransition = { EnterTransition.None },
+        popExitTransition = { ExitTransition.None }
+    ) {
         composable("home") {
             HomeScreen(navController = navController)
         }
@@ -25,7 +35,7 @@ fun NavGraph() {
         composable("profile") {
             ProfileScreen(navController = navController)
         }
-        composable("add") {
+        slideFromBottomComposable("add") {
             AddNewTransactionScreen(navController = navController)
         }
     }

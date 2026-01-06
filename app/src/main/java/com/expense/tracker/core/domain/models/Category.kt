@@ -34,38 +34,39 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 @Keep
 data class Category(
+    val id: Long = 0L,
     val label: String,
     val icon: ImageVector
 ){
-    constructor():this("", Icons.Default.Category)
+    constructor():this(0L, "", Icons.Default.Category)
 }
 
 val expenseCategories = listOf(
-    Category("Shopping", Icons.Outlined.ShoppingCart),
-    Category("Food", Icons.Outlined.Restaurant),
-    Category("Phone", Icons.Outlined.PhoneAndroid),
-    Category("Entertainment", Icons.Outlined.Mic),
-    Category("Education", Icons.AutoMirrored.Outlined.MenuBook),
-    Category("Beauty", Icons.Outlined.Face),
-    Category("Sports", Icons.Outlined.Pool),
-    Category("Social", Icons.Outlined.People),
-    Category("Transportation", Icons.Outlined.DirectionsBus),
-    Category("Clothing", Icons.Outlined.Checkroom),
-    Category("Car", Icons.Outlined.DirectionsCar),
-    Category("Alcohol", Icons.Outlined.WineBar),
-    Category("Cigarettes", Icons.Outlined.SmokingRooms),
-    Category("Electronics", Icons.Outlined.Devices),
-    Category("Travel", Icons.Outlined.Flight),
-    Category("Health", Icons.Outlined.MedicalServices),
-    Category("Pets", Icons.Outlined.Pets),
-    Category("Repairs", Icons.Outlined.Build),
-    Category("Housing", Icons.Outlined.Home),
-    Category("Gifts", Icons.Outlined.CardGiftcard),
-    Category("Donations", Icons.Outlined.Favorite),
-    Category("Lottery", Icons.Outlined.ConfirmationNumber),
-    Category("Snacks", Icons.Outlined.Cake),
-    Category("Kids", Icons.Outlined.ChildCare),
-    Category("Vegetables", Icons.Outlined.Eco),
-    Category("Fruits", Icons.Outlined.LocalGroceryStore),
-    Category("Settings", Icons.Outlined.Add)
+    Category(1, "Shopping", Icons.Outlined.ShoppingCart),
+    Category(2, "Food", Icons.Outlined.Restaurant),
+    Category(3, "Phone", Icons.Outlined.PhoneAndroid),
+    Category(4, "Entertainment", Icons.Outlined.Mic),
+    Category(5, "Education", Icons.AutoMirrored.Outlined.MenuBook),
+    Category(6, "Beauty", Icons.Outlined.Face),
+    Category(7, "Sports", Icons.Outlined.Pool),
+    Category(8, "Social", Icons.Outlined.People),
+    Category(9, "Transportation", Icons.Outlined.DirectionsBus),
+    Category(10, "Clothing", Icons.Outlined.Checkroom),
+    Category(11, "Car", Icons.Outlined.DirectionsCar),
+    Category(12, "Alcohol", Icons.Outlined.WineBar),
+    Category(13, "Cigarettes", Icons.Outlined.SmokingRooms),
+    Category(14, "Electronics", Icons.Outlined.Devices),
+    Category(15, "Travel", Icons.Outlined.Flight),
+    Category(16, "Health", Icons.Outlined.MedicalServices),
+    Category(17, "Pets", Icons.Outlined.Pets),
+    Category(18, "Repairs", Icons.Outlined.Build),
+    Category(19, "Housing", Icons.Outlined.Home),
+    Category(20, "Gifts", Icons.Outlined.CardGiftcard),
+    Category(21, "Donations", Icons.Outlined.Favorite),
+    Category(22, "Lottery", Icons.Outlined.ConfirmationNumber),
+    Category(23, "Snacks", Icons.Outlined.Cake),
+    Category(24, "Kids", Icons.Outlined.ChildCare),
+    Category(25, "Vegetables", Icons.Outlined.Eco),
+    Category(26, "Fruits", Icons.Outlined.LocalGroceryStore),
+    Category(27, "Settings", Icons.Outlined.Add)
 )

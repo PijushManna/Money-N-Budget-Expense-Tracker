@@ -2,6 +2,7 @@ package com.expense.tracker.feature.add
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -120,6 +121,7 @@ private fun AddNewTransactionScreenContainer(
             )
         }
         CategoryGrid(
+            modifier = Modifier.animateContentSize(),
             categories = uiState.categories,
             selectedCategory = uiState.selectedCategory,
             onItemClick = onCategorySelected

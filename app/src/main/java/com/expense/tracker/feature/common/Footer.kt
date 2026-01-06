@@ -1,37 +1,32 @@
 package com.expense.tracker.feature.common
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.CandlestickChart
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.outlined.BarChart
+import androidx.compose.material.icons.outlined.CandlestickChart
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Receipt
-import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.BottomAppBar
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.unit.dp
 
 @Composable
-fun Footer(modifier: Modifier = Modifier, currentRoute: String) {
+fun Footer(modifier: Modifier = Modifier, currentRoute: String, onRouteChange: (String) -> Unit = {}) {
 
     BottomAppBar(
         actions = {
@@ -40,15 +35,19 @@ fun Footer(modifier: Modifier = Modifier, currentRoute: String) {
             ) {
                 bottomNavigationItems.forEachIndexed { index, it ->
                     if (index == bottomNavigationItems.size/ 2){
-                        FloatingActionButton(onClick = {}, containerColor = MaterialTheme.colorScheme.primary){
+                        FloatingActionButton(onClick = {
+                            onRouteChange("add")
+                        }, containerColor = MaterialTheme.colorScheme.primary){
                             Icon(imageVector = Icons.Default.Add, contentDescription = "add")
                         }
                     }
                     Column {
-                        val tint by animateColorAsState(if (it.route == currentRoute) MaterialTheme.colorScheme.primary else Color.Unspecified)
-                        IconButton(onClick = {}) {
+                        val tint = if (it.route == currentRoute) MaterialTheme.colorScheme.primary else LocalContentColor.current
+                        IconButton(onClick = {
+                            onRouteChange(it.route)
+                        }) {
                             Icon(
-                                imageVector = it.defaultIcon,
+                                imageVector = if(it.route == currentRoute) it.selectedIcon else it.defaultIcon,
                                 contentDescription = it.label,
                                 tint = tint
                             )
@@ -76,15 +75,15 @@ sealed class BottomNavigationRoute(
 ) {
     object Home : BottomNavigationRoute("home", Icons.Outlined.Home, Icons.Filled.Home, "Home")
     object Charts :
-        BottomNavigationRoute("charts", Icons.Outlined.BarChart, Icons.Filled.BarChart, "Charts")
+        BottomNavigationRoute("charts", Icons.Outlined.CandlestickChart, Icons.Filled.CandlestickChart, "Charts")
 
     object Reports :
         BottomNavigationRoute("reports", Icons.Outlined.Receipt, Icons.Filled.Receipt, "Reports")
 
     object Settings : BottomNavigationRoute(
         "settings",
-        Icons.Outlined.Settings,
-        Icons.Filled.Settings,
-        "Settings"
+        Icons.Outlined.Person,
+        Icons.Filled.Person,
+        "Profile"
     )
 }

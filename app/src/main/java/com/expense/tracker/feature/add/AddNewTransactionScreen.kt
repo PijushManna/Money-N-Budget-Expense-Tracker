@@ -59,7 +59,7 @@ fun AddNewTransactionScreenContainer(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-private fun AddNewTransactionScreenPreview() {
+fun AddNewTransactionScreenPreview() {
     MoneyBudgetExpenseTrackerTheme {
         AddNewTransactionScreenContainer()
     }

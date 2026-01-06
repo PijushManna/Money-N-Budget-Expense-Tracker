@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Movie
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Work
-import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +43,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 @Composable
 fun HomeScreenContainer(transactions: List<TransactionsViewType> = emptyList(), headerColor: Color = MaterialTheme.colorScheme.primaryContainer, modifier: Modifier = Modifier){
     Column(modifier = modifier.fillMaxSize()) {
-        Overview(Modifier.background(headerColor), MaterialTheme.colorScheme.primary.copy(0.5F))
+        Overview(Modifier, MaterialTheme.colorScheme.primaryContainer)
         TransactionDetails(transactions)
     }
 }
@@ -66,6 +65,7 @@ fun Overview(modifier: Modifier = Modifier, buttonColor: Color){
             }
         }
     }
+    HorizontalDivider(thickness = 0.5.dp)
 }
 
 @Composable

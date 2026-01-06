@@ -34,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.expense.tracker.core.domain.models.AccountUi
@@ -49,7 +50,7 @@ fun AccountsPager(
     val pages = accounts + listOf<AccountUi?>(null)
     val pagerState = rememberPagerState { pages.size }
 
-    Column(modifier = modifier) {
+    Column(modifier = modifier.height(220.dp), verticalArrangement = Arrangement.SpaceBetween) {
 
         HorizontalPager(
             state = pagerState,
@@ -69,7 +70,6 @@ fun AccountsPager(
             }
         }
 
-        Spacer(modifier = Modifier.height(12.dp))
 
         PagerIndicator(
             pageCount = pages.size,
@@ -105,23 +105,22 @@ fun AccountPagerCard(
                 .background(gradient)
                 .padding(16.dp)
         ) {
-            Column {
-
-                Text(
-                    text = account.name,
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                )
-
-                account.subtitle?.let {
+            Column(verticalArrangement = Arrangement.SpaceBetween, modifier = Modifier.fillMaxSize()) {
+                Column {
                     Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.75f)
+                        text = account.name,
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer
                     )
-                }
 
-                Spacer(modifier = Modifier.weight(1f))
+                    account.subtitle?.let {
+                        Text(
+                            text = it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onPrimaryContainer.copy(0.75f)
+                        )
+                    }
+                }
 
                 AnimatedVisibility(
                     visible = selected,
@@ -131,7 +130,9 @@ fun AccountPagerCard(
                     Text(
                         text = account.balance,
                         style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onPrimaryContainer
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.fillMaxWidth(),
+                        textAlign = TextAlign.End
                     )
                 }
             }
@@ -147,7 +148,7 @@ fun AddAccountCard(
         onClick = onClick,
         modifier = Modifier
             .width(280.dp)
-            .height(170.dp),
+            .height(140.dp),
         shape = RoundedCornerShape(24.dp)
     ) {
         Box(
@@ -186,7 +187,7 @@ fun PagerIndicator(
             Box(
                 modifier = Modifier
                     .padding(4.dp)
-                    .size(if (selected) 10.dp else 8.dp)
+                    .size( 8.dp)
                     .clip(CircleShape)
                     .background(
                         if (selected)

@@ -18,7 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.expense.tracker.core.models.expenseCategories
+import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
 import com.expense.tracker.ui.theme.MoneyBudgetExpenseTrackerTheme

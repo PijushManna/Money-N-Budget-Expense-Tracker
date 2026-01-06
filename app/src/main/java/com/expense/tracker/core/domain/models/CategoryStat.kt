@@ -1,4 +1,4 @@
-package com.expense.tracker.core.models
+package com.expense.tracker.core.domain.models
 
 import androidx.annotation.Keep
 import androidx.compose.ui.graphics.Color

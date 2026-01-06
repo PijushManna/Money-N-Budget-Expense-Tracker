@@ -39,7 +39,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.expense.tracker.core.models.AccountUi
+import com.expense.tracker.core.domain.models.AccountUi
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

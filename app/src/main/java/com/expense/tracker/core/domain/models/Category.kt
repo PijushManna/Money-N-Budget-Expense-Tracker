@@ -1,4 +1,4 @@
-package com.expense.tracker.core.models
+package com.expense.tracker.core.domain.models
 
 import androidx.annotation.Keep
 import androidx.compose.material.icons.Icons
@@ -21,7 +21,6 @@ import androidx.compose.material.icons.outlined.Flight
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.LocalGroceryStore
 import androidx.compose.material.icons.outlined.MedicalServices
-import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Pets

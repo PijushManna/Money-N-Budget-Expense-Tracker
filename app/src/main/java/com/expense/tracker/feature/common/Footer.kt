@@ -64,7 +64,7 @@ val bottomNavigationItems: List<BottomNavigationRoute> = listOf(
     BottomNavigationRoute.Home,
     BottomNavigationRoute.Charts,
     BottomNavigationRoute.Reports,
-    BottomNavigationRoute.Settings
+    BottomNavigationRoute.Profile
 )
 
 sealed class BottomNavigationRoute(
@@ -80,8 +80,8 @@ sealed class BottomNavigationRoute(
     object Reports :
         BottomNavigationRoute("reports", Icons.Outlined.Receipt, Icons.Filled.Receipt, "Reports")
 
-    object Settings : BottomNavigationRoute(
-        "settings",
+    object Profile : BottomNavigationRoute(
+        "profile",
         Icons.Outlined.Person,
         Icons.Filled.Person,
         "Profile"

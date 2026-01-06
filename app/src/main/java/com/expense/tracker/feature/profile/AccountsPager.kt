@@ -1,7 +1,6 @@
 package com.expense.tracker.feature.profile
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
@@ -31,12 +30,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.expense.tracker.core.domain.models.AccountUi
@@ -56,8 +53,7 @@ fun AccountsPager(
 
         HorizontalPager(
             state = pagerState,
-            contentPadding = PaddingValues(horizontal = 24.dp),
-            pageSpacing = 16.dp,
+            contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp),
             modifier = Modifier.fillMaxWidth()
         ) { page ->
             val account = pages[page]
@@ -88,10 +84,6 @@ fun AccountPagerCard(
     selected: Boolean,
     onClick: () -> Unit
 ) {
-    val scale by animateFloatAsState(
-        targetValue = if (selected) 1f else 0.94f,
-        label = "card-scale"
-    )
 
     val gradient = Brush.linearGradient(
         colors = listOf(
@@ -103,10 +95,6 @@ fun AccountPagerCard(
     ElevatedCard(
         onClick = onClick,
         modifier = Modifier
-            .graphicsLayer {
-                scaleX = scale
-                scaleY = scale
-            }
             .width(280.dp)
             .height(140.dp),
         shape = RoundedCornerShape(24.dp)

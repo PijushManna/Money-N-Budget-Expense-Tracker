@@ -8,39 +8,47 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.EventRepeat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import com.expense.tracker.R
 import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
 import com.expense.tracker.ui.theme.MoneyBudgetExpenseTrackerTheme
 
 @Composable
-fun AddNewTransactionScreen(modifier: Modifier = Modifier) {
-    AddNewTransactionScreenContainer(modifier)
-}
-
-@Composable
-fun AddNewTransactionScreenContainer(modifier: Modifier = Modifier) {
-    Column(modifier = modifier.fillMaxSize()) {
+fun AddNewTransactionScreen(navController: NavController) {
+    Scaffold(topBar = {
         Header(
-            HeaderConfig(
-                title = "Add Transactions",
-                navigationIcon = Icons.Default.Close,
+            config = HeaderConfig(
+                title = stringResource(R.string.app_name),
+                navigationIcon = null,
+                onNavigationClick = {},
                 actions = {
                     IconButton(onClick = {}) {
                         Icon(Icons.Default.EventRepeat, contentDescription = "Event Repeat")
                     }
-                })
+                }
+            )
         )
+    }) {
+        AddNewTransactionScreenContainer(Modifier.padding(it))
+    }
+}
+
+@Composable
+private fun AddNewTransactionScreenContainer(modifier: Modifier = Modifier) {
+    Column(modifier = modifier.fillMaxSize()) {
         Box(
             Modifier
                 .fillMaxWidth()

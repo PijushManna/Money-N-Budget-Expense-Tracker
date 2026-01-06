@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -23,6 +22,7 @@ import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.ThumbUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,66 +31,77 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.expense.tracker.core.domain.models.AccountUi
+import com.expense.tracker.feature.common.Footer
 
 @Composable
-fun ProfileScreen(modifier: Modifier = Modifier) {
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-    ) {
+fun ProfileScreen(navController: NavController) {
+    Scaffold(
+        topBar = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.primary)
+                    .padding(16.dp)
+                    .padding(top = 40.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
+                        modifier = Modifier.size(64.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Person,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.onPrimary,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
 
-        // Header
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    Column {
+                        Text(
+                            text = "Sign In",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Text(
+                            text = "Sign in, more exciting!",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+        },
+        bottomBar = {
+        Footer(currentRoute = "profile") {
+            navController.navigate(it)
+        }
+    }) {
         Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .height(160.dp)
-                .background(MaterialTheme.colorScheme.primary)
-                .padding(16.dp)
+                .fillMaxSize()
+                .padding(it)
+                .background(MaterialTheme.colorScheme.background)
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                    modifier = Modifier.size(64.dp)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Person,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(12.dp)
-                    )
-                }
 
-                Spacer(modifier = Modifier.width(16.dp))
-
-                Column {
-                    Text(
-                        text = "Sign In",
-                        style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.onPrimary
-                    )
-                    Text(
-                        text = "Sign in, more exciting!",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                    )
-                }
-            }
-            Spacer(modifier = Modifier.height(16.dp))
-        }
-        AccountsPager(
-            accounts = listOf(
-                AccountUi("1", "Main Account", "$2,450.00", "Checking"),
-                AccountUi("2", "Savings", "$12,800.00")
-            ),
-            onAccountClick = { },
-            onAddAccountClick = { },
-            modifier = Modifier.offset(y = (-40).dp)
-        )
+            // Header
+            AccountsPager(
+                accounts = listOf(
+                    AccountUi("1", "Main Account", "$2,450.00", "Checking"),
+                    AccountUi("2", "Savings", "$12,800.00")
+                ),
+                onAccountClick = { },
+                onAddAccountClick = { },
+            )
 
 //        Spacer(modifier = Modifier.height(12.dp))
 //
@@ -101,14 +112,15 @@ fun ProfileScreen(modifier: Modifier = Modifier) {
 //            highlight = true
 //        )
 
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        ProfileItem(icon = Icons.Default.ThumbUp, title = "Recommend to friends")
-        ProfileItem(icon = Icons.Default.Feedback, title = "Provide Feedback")
-        ProfileItem(icon = Icons.Default.StarRate, title = "Rate Us")
+            ProfileItem(icon = Icons.Default.ThumbUp, title = "Recommend to friends")
+            ProfileItem(icon = Icons.Default.Feedback, title = "Provide Feedback")
+            ProfileItem(icon = Icons.Default.StarRate, title = "Rate Us")
 //        ProfileItem(icon = Icons.Default.Block, title = "Block Ads")
-        ProfileItem(icon = Icons.Default.Settings, title = "Settings")
-        ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps")
+            ProfileItem(icon = Icons.Default.Settings, title = "Settings")
+            ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps")
+        }
     }
 }
 
@@ -158,5 +170,5 @@ fun ProfileItem(
 @Preview
 @Composable
 fun ProfileScreenPreview() {
-    ProfileScreen()
+    ProfileScreen(navController = rememberNavController())
 }

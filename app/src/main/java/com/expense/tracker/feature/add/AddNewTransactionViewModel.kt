@@ -9,6 +9,7 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.models.expenseCategories
+import com.expense.tracker.core.domain.models.incomeCategories
 import com.expense.tracker.core.domain.repo.TransactionRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -33,7 +34,18 @@ class AddNewTransactionViewModel @Inject constructor(
         private set
 
     fun onTabSelected(index: Int) {
-        uiState = uiState.copy(selectedTabIndex = index)
+        val newCategories = when(index) {
+            0 -> incomeCategories.values.toList()
+            1 -> expenseCategories.values.toList()
+            else -> emptyList()
+        }
+        uiState = uiState.copy(
+            selectedTabIndex = index,
+            categories = newCategories,
+            selectedCategory = Category(),
+            showNumpad = false,
+            amount = "0"
+        )
     }
 
     fun onCategorySelected(category: Category) {
@@ -56,7 +68,6 @@ class AddNewTransactionViewModel @Inject constructor(
 
     private fun saveTransaction() {
         viewModelScope.launch {
-            uiState = AddNewTransactionUiState()
             val transaction = TransactionEntity(
                 title = uiState.selectedCategory.label,
                 amount = uiState.amount.toDouble(),
@@ -65,6 +76,12 @@ class AddNewTransactionViewModel @Inject constructor(
                 note = uiState.note
             )
             transactionRepository.addTransaction(transaction)
+            uiState = uiState.copy(
+                showNumpad = false,
+                selectedCategory = Category(),
+                amount = "0",
+                note = ""
+            )
         }
     }
 

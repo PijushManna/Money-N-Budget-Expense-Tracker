@@ -41,6 +41,13 @@ data class Category(
     constructor():this(0L, "", Icons.Default.Category)
 }
 
+val incomeCategories = listOf(
+    Category(101, "Salary", Icons.Outlined.Home),
+    Category(102, "Business", Icons.Outlined.Build),
+    Category(103, "Gift", Icons.Outlined.CardGiftcard),
+    Category(104, "Other", Icons.Outlined.Add)
+).associateBy(Category::id)
+
 val expenseCategories = listOf(
     Category(1, "Shopping", Icons.Outlined.ShoppingCart),
     Category(2, "Food", Icons.Outlined.Restaurant),

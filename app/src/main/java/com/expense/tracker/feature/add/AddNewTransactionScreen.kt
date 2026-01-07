@@ -108,7 +108,7 @@ private fun AddNewTransactionScreenContainer(
         rememberPagerState(initialPage = uiState.selectedTabIndex) { uiState.tabs.size }
     val scope = rememberCoroutineScope()
 
-    LaunchedEffect(pagerState.currentPage, pagerState.isScrollInProgress) {
+    LaunchedEffect(pagerState.currentPage) {
         if (!pagerState.isScrollInProgress) {
             onTabSelected(pagerState.currentPage)
         }

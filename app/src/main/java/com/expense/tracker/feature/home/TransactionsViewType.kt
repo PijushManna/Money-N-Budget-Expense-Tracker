@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 sealed class TransactionsViewType {
     data class Header(val date: String, val total: String) : TransactionsViewType()
     data class Transaction(
+        val id: Long,
         val icon: ImageVector,
         val label: String,
         val amount: String

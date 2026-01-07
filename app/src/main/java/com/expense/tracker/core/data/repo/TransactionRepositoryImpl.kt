@@ -19,6 +19,10 @@ class TransactionRepositoryImpl(
         transactionDao.delete(transaction)
     }
 
+    override suspend fun deleteById(id: Long) {
+        transactionDao.deleteById(id)
+    }
+
     override fun getAllTransactions(): Flow<List<TransactionEntity>> {
         return transactionDao.getAllTransactions()
     }
@@ -35,5 +39,9 @@ class TransactionRepositoryImpl(
     override fun getTotalExpense(): Flow<Double> {
         return transactionDao.getTotalAmount(TransactionType.EXPENSE)
             .map { it ?: 0.0 }
+    }
+
+    override fun getTransactionById(id: Long): Flow<TransactionEntity?> {
+        return transactionDao.getTransactionById(id)
     }
 }

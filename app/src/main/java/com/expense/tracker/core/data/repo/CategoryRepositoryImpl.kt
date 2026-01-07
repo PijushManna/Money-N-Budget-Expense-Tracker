@@ -16,4 +16,8 @@ class CategoryRepositoryImpl(
     override fun getCategories(): Flow<List<CategoryEntity>> {
         return categoryDao.getAllCategories()
     }
+
+    override fun getCategoryById(id: Long): Flow<CategoryEntity?> {
+        return categoryDao.getCategoryById(id)
+    }
 }

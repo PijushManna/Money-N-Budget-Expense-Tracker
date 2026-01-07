@@ -18,6 +18,9 @@ interface TransactionDao {
     @Delete
     suspend fun delete(transaction: TransactionEntity)
 
+    @Query("DELETE FROM transactions WHERE id = :id")
+    suspend fun deleteById(id: Long)
+
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
     fun getAllTransactions(): Flow<List<TransactionEntity>>
 
@@ -37,4 +40,7 @@ interface TransactionDao {
 
     @Query("SELECT SUM(amount) FROM transactions WHERE type = :type")
     fun getTotalAmount(type: TransactionType): Flow<Double?>
+
+    @Query("SELECT * FROM transactions WHERE id = :id")
+    fun getTransactionById(id: Long): Flow<TransactionEntity?>
 }

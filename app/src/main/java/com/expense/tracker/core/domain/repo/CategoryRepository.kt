@@ -6,4 +6,5 @@ import kotlinx.coroutines.flow.Flow
 interface CategoryRepository {
     suspend fun addCategory(category: CategoryEntity)
     fun getCategories(): Flow<List<CategoryEntity>>
+    fun getCategoryById(id: Long): Flow<CategoryEntity?>
 }

@@ -20,7 +20,8 @@ fun TransactionEntity.toTransactionViewType(): TransactionsViewType.Transaction 
             append(if (isIncome) "+" else "-")
             append(currency)
             append(amount.toInt())
-        }
+        },
+        id = id
     )
 }
 

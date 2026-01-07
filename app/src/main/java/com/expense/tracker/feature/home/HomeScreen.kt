@@ -60,7 +60,7 @@ fun HomeScreen(
             .fillMaxSize()
             .padding(it)) {
             Overview(Modifier, uiState.overview)
-            TransactionDetails(uiState.transactions)
+            TransactionDetails(uiState.transactions, navController)
         }
     }
 }
@@ -70,7 +70,7 @@ fun HomeScreenContainer(
     transactions: List<TransactionsViewType> = emptyList(), modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        TransactionDetails(transactions)
+        TransactionDetails(transactions, navController = rememberNavController())
     }
 }
 
@@ -140,7 +140,7 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
 }
 
 @Composable
-fun ColumnScope.TransactionDetails(transactions: List<TransactionsViewType>) {
+fun ColumnScope.TransactionDetails(transactions: List<TransactionsViewType>, navController: NavController) {
     LazyColumn(
         Modifier
             .fillMaxWidth()
@@ -168,6 +168,9 @@ fun ColumnScope.TransactionDetails(transactions: List<TransactionsViewType>) {
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clickable{
+                                navController.navigate("details/${it.id}")
+                            }
                             .padding(vertical = 8.dp, horizontal = 12.dp)
                     ) {
                         Row(

@@ -18,7 +18,7 @@ data class AddNewTransactionUiState(
     val tabs: List<String> = listOf("Income", "Expenses", "Transaction"),
     val selectedTabIndex: Int = 1,
     val showNumpad: Boolean = false,
-    val categories: List<Category> = expenseCategories,
+    val categories: List<Category> = expenseCategories.values.toList(),
     val selectedCategory: Category = Category(),
     val amount: String = "0",
     val note: String = ""

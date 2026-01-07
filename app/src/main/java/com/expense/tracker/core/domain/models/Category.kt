@@ -69,4 +69,4 @@ val expenseCategories = listOf(
     Category(25, "Vegetables", Icons.Outlined.Eco),
     Category(26, "Fruits", Icons.Outlined.LocalGroceryStore),
     Category(27, "Settings", Icons.Outlined.Add)
-)
+).associateBy(Category::id)

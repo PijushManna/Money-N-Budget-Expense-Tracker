@@ -57,4 +57,8 @@ class RecurringPaymentViewModel @Inject constructor(
             }
         }
     }
+
+    fun onActiveChange(isActive: Boolean) {
+        _uiState.value = _uiState.value.copy(isActive = isActive)
+    }
 }

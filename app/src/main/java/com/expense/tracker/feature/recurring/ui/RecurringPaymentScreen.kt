@@ -50,7 +50,7 @@ import java.util.Date
 import java.util.Locale
 
 @Composable
-fun RecurringPaymentScreenContainer(
+fun RecurringPaymentScreen(
     viewModel: RecurringPaymentViewModel = hiltViewModel(),
     onNavigateUp: () -> Unit
 ) {
@@ -63,6 +63,8 @@ fun RecurringPaymentScreenContainer(
         onTypeChange = viewModel::onTypeChange,
         onFrequencyChange = viewModel::onFrequencyChange,
         onStartDateChange = viewModel::onStartDateChange,
+        onActiveChange = viewModel::onActiveChange,
+        onDismiss = onNavigateUp,
         onSave = {
             viewModel.addRecurringPayment()
             onNavigateUp()
@@ -72,7 +74,7 @@ fun RecurringPaymentScreenContainer(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RecurringPaymentScreen(
+private fun RecurringPaymentScreen(
     uiState: RecurringPaymentState = RecurringPaymentState(),
     onTitleChange: (String) -> Unit = {},
     onAmountChange: (String) -> Unit = {},

@@ -1,5 +1,5 @@
 
-import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
@@ -11,7 +11,7 @@ import androidx.navigation.compose.composable
 
 fun NavGraphBuilder.slideFromBottomComposable(
     route: String,
-    duration: Int = 700,
+    duration: Int = 400,
     arguments: List<NamedNavArgument> = emptyList(),
     content: @Composable (NavBackStackEntry) -> Unit
 ) {
@@ -25,7 +25,7 @@ fun NavGraphBuilder.slideFromBottomComposable(
                 },
                 animationSpec = tween(
                     durationMillis = duration,
-                    easing = FastOutSlowInEasing
+                    easing = LinearEasing
                 )
             )
         },
@@ -37,31 +37,7 @@ fun NavGraphBuilder.slideFromBottomComposable(
                 },
                 animationSpec = tween(
                     durationMillis = duration,
-                    easing = FastOutSlowInEasing
-                )
-            )
-        },
-
-        popEnterTransition = {
-            slideInVertically(
-                initialOffsetY = { fullHeight ->
-                    fullHeight
-                },
-                animationSpec = tween(
-                    durationMillis = duration,
-                    easing = FastOutSlowInEasing
-                )
-            )
-        },
-
-        popExitTransition = {
-            slideOutVertically(
-                targetOffsetY = { fullHeight ->
-                    fullHeight
-                },
-                animationSpec = tween(
-                    durationMillis = duration,
-                    easing = FastOutSlowInEasing
+                    easing = LinearEasing
                 )
             )
         },

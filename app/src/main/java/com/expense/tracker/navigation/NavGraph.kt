@@ -54,7 +54,9 @@ fun NavGraph() {
             DetailsScreen(navController = navController)
         }
         slideFromBottomComposable(Screen.RecurringPayment.route) {
-            RecurringPaymentScreen()
+            RecurringPaymentScreen() {
+                navController.popBackStack()
+            }
         }
     }
 }

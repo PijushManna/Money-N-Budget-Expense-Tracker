@@ -119,7 +119,7 @@ class AddNewTransactionViewModel @Inject constructor(
         return when (key) {
             "⌫" -> if (current.length > 1) current.dropLast(1) else "0"
             "+", "-", "Today" -> current
-            else -> if (current == "0") key else (current + key).toDoubleOrNull()?.formatAmount() ?: (current + key)
+            else -> if (current == "0") key else (current + key)
         }
     }
 }

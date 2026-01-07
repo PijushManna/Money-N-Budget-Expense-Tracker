@@ -1,7 +1,7 @@
 package com.expense.tracker.navigation
 
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -13,6 +13,7 @@ import com.expense.tracker.feature.chart.ChartsScreen
 import com.expense.tracker.feature.details.DetailsScreen
 import com.expense.tracker.feature.home.HomeScreen
 import com.expense.tracker.feature.profile.ProfileScreen
+import com.expense.tracker.feature.recurring.ui.RecurringPaymentScreen
 import slideFromBottomComposable
 
 @Composable
@@ -21,20 +22,21 @@ fun NavGraph() {
     NavHost(
         navController,
         "home",
-        enterTransition = { EnterTransition.None },
-        exitTransition = { ExitTransition.None },
-        popEnterTransition = { EnterTransition.None },
-        popExitTransition = { ExitTransition.None }) {
-        composable("home") {
+        enterTransition = { fadeIn() },
+        exitTransition = { fadeOut() },
+        popEnterTransition = { fadeIn() },
+        popExitTransition = { fadeOut() }
+    ) {
+        composable(Screen.Home.route) {
             HomeScreen(navController = navController)
         }
-        composable("charts") {
+        composable(Screen.Charts.route) {
             ChartsScreen(navController = navController)
         }
-        composable("reports") {
+        composable(Screen.Reports.route) {
             HomeScreen(navController = navController)
         }
-        composable("profile") {
+        composable(Screen.Profile.route) {
             ProfileScreen(navController = navController)
         }
         slideFromBottomComposable(
@@ -51,5 +53,18 @@ fun NavGraph() {
         ) {
             DetailsScreen(navController = navController)
         }
+        slideFromBottomComposable(Screen.RecurringPayment.route) {
+            RecurringPaymentScreen()
+        }
     }
+}
+
+sealed class Screen(val route: String) {
+    object Home : Screen("home")
+    object Charts : Screen("charts")
+    object Reports : Screen("reports")
+    object Profile : Screen("profile")
+    object Add : Screen("add")
+    object Details : Screen("details")
+    object RecurringPayment : Screen("recurring_payment")
 }

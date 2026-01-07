@@ -61,6 +61,7 @@ import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.core.domain.models.incomeCategories
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
+import com.expense.tracker.navigation.Screen
 import com.expense.tracker.ui.theme.MoneyBudgetExpenseTrackerTheme
 import kotlinx.coroutines.launch
 
@@ -79,7 +80,9 @@ fun AddNewTransactionScreen(
                 navController.popBackStack()
             },
             actions = {
-                IconButton(onClick = {}) {
+                IconButton(onClick = {
+                    navController.navigate(Screen.RecurringPayment.route)
+                }) {
                     Icon(Icons.Default.EventRepeat, contentDescription = "Event Repeat")
                 }
             }))

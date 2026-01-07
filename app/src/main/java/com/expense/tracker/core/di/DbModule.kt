@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.expense.tracker.core.data.local.dao.BudgetDao
 import com.expense.tracker.core.data.local.dao.CategoryDao
+import com.expense.tracker.core.data.local.dao.RecurringPaymentDao
 import com.expense.tracker.core.data.local.dao.TransactionDao
 import com.expense.tracker.core.data.local.db.BudgetDatabase
 import dagger.Module
@@ -35,4 +36,8 @@ object DbModule {
     @Provides
     @Singleton
     fun bindBudgetDao(db: BudgetDatabase): BudgetDao = db.budgetDao()
+
+    @Provides
+    @Singleton
+    fun bindRecurringPaymentDao(db: BudgetDatabase): RecurringPaymentDao = db.recurringPaymentDao()
 }

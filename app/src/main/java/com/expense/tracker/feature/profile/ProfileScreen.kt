@@ -1,6 +1,7 @@
 package com.expense.tracker.feature.profile
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Feedback
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.ThumbUp
@@ -35,6 +37,7 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.expense.tracker.core.domain.models.AccountUi
 import com.expense.tracker.feature.common.Footer
+import com.expense.tracker.navigation.Screen
 
 @Composable
 fun ProfileScreen(navController: NavController) {
@@ -114,12 +117,17 @@ fun ProfileScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            ProfileItem(icon = Icons.Default.ThumbUp, title = "Recommend to friends")
-            ProfileItem(icon = Icons.Default.Feedback, title = "Provide Feedback")
-            ProfileItem(icon = Icons.Default.StarRate, title = "Rate Us")
-//        ProfileItem(icon = Icons.Default.Block, title = "Block Ads")
-            ProfileItem(icon = Icons.Default.Settings, title = "Settings")
-            ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps")
+            ProfileItem(
+                icon = Icons.Default.ThumbUp, title = "Recommend to friends", onClick = {}
+            )
+            ProfileItem(icon = Icons.Default.Feedback, title = "Provide Feedback", onClick = {})
+            ProfileItem(icon = Icons.Default.StarRate, title = "Rate Us", onClick = {})
+            ProfileItem(
+                icon = Icons.Default.Refresh, title = "Recurring Payments",
+                onClick = { navController.navigate(Screen.RecurringPayment.route) }
+            )
+            ProfileItem(icon = Icons.Default.Settings, title = "Settings", onClick = {})
+            ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps", onClick = {})
         }
     }
 }
@@ -128,12 +136,14 @@ fun ProfileScreen(navController: NavController) {
 fun ProfileItem(
     icon: ImageVector,
     title: String,
-    highlight: Boolean = false
+    highlight: Boolean = false,
+    onClick: () -> Unit
 ) {
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 6.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp)
+            .clickable { onClick() },
         shape = RoundedCornerShape(12.dp),
         tonalElevation = if (highlight) 3.dp else 1.dp
     ) {

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.expense.tracker.core.domain.repo.TransactionRepository
 import com.expense.tracker.feature.home.states.HomeUiState
+import com.expense.tracker.utils.formatAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,9 +35,9 @@ class HomeViewModel @Inject constructor(
                 currentState.copy(
                     transactions = transactionViewTypes,
                     overview = currentState.overview.copy(
-                        totalIncome = "$currency${income.toInt()}",
-                        totalExpense = "$currency${expense.toInt()}",
-                        totalBalance = "$currency${balance.toInt()}"
+                        totalIncome = income.formatAmount(currency),
+                        totalExpense = (-expense).formatAmount(currency),
+                        totalBalance = balance.formatAmount(currency)
                     )
                 )
             }

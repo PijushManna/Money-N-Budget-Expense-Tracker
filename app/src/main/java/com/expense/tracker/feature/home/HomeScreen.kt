@@ -76,66 +76,71 @@ fun HomeScreenContainer(
 
 @Composable
 fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
-    LazyRow(modifier = modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-        stickyHeader {
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.padding(8.dp)
-            ) {
-                Text(uiState.selectedYear, style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    uiState.selectedMonth,
-                    style = MaterialTheme.typography.headlineMedium,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(18.dp))
-                        .background(
-                            color = MaterialTheme.colorScheme.primaryContainer,
-                            shape = RoundedCornerShape(12.dp)
-                        )
-                        .clickable {}
-                        .padding(horizontal = 12.dp))
-            }
+    Row(modifier = modifier.fillMaxWidth()){
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(8.dp)
+        ) {
+            Text(uiState.selectedYear, style = MaterialTheme.typography.bodyMedium)
+            Text(
+                uiState.selectedMonth,
+                style = MaterialTheme.typography.headlineMedium,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        shape = RoundedCornerShape(12.dp)
+                    )
+                    .clickable {}
+                    .padding(horizontal = 12.dp))
         }
-        item {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
-            ) {
-                Text("Expense", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    uiState.totalExpense,
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.titleLarge
-                )
+
+        LazyRow(horizontalArrangement = Arrangement.SpaceAround) {
+            item {
+
             }
-        }
-        item {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
-            ) {
-                Text("Income", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    uiState.totalIncome,
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.titleLarge
-                )
+            item {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
+                ) {
+                    Text("Expense", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        uiState.totalExpense,
+                        modifier = Modifier.padding(top = 4.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
-        }
-        item {
-            Column(
-                horizontalAlignment = Alignment.Start,
-                modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
-            ) {
-                Text("Balance", style = MaterialTheme.typography.bodyMedium)
-                Text(
-                    uiState.totalBalance,
-                    modifier = Modifier.padding(top = 4.dp),
-                    style = MaterialTheme.typography.titleLarge
-                )
+            item {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
+                ) {
+                    Text("Income", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        uiState.totalIncome,
+                        modifier = Modifier.padding(top = 4.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
+            }
+            item {
+                Column(
+                    horizontalAlignment = Alignment.Start,
+                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
+                ) {
+                    Text("Balance", style = MaterialTheme.typography.bodyMedium)
+                    Text(
+                        uiState.totalBalance,
+                        modifier = Modifier.padding(top = 4.dp),
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                }
             }
         }
     }
+
     HorizontalDivider(thickness = 0.5.dp)
 }
 

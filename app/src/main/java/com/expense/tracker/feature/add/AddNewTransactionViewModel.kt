@@ -12,6 +12,7 @@ import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.core.domain.models.incomeCategories
 import com.expense.tracker.core.domain.repo.TransactionRepository
+import com.expense.tracker.utils.formatAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -49,7 +50,7 @@ class AddNewTransactionViewModel @Inject constructor(
                                 selectedTabIndex = if (transaction.type == TransactionType.INCOME) 0 else 1,
                                 selectedCategory = incomeCategories[transaction.categoryId]
                                     ?: expenseCategories[transaction.categoryId] ?: Category(),
-                                amount = "%.2f".format(transaction.amount),
+                                amount = transaction.amount.formatAmount(transaction.currency),
                                 note = transaction.note ?: "",
                                 currency = transaction.currency,
                                 showNumpad = true
@@ -118,7 +119,7 @@ class AddNewTransactionViewModel @Inject constructor(
         return when (key) {
             "⌫" -> if (current.length > 1) current.dropLast(1) else "0"
             "+", "-", "Today" -> current
-            else -> if (current == "0") key else current + key
+            else -> if (current == "0") key else (current + key).toDoubleOrNull()?.formatAmount() ?: (current + key)
         }
     }
 }

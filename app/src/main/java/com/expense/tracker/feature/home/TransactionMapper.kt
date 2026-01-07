@@ -7,6 +7,7 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.core.domain.models.incomeCategories
+import com.expense.tracker.utils.formatAmount
 import com.expense.tracker.utils.toLocalDate
 import com.expense.tracker.utils.toUiDate
 
@@ -16,11 +17,7 @@ fun TransactionEntity.toTransactionViewType(): TransactionsViewType.Transaction 
     return TransactionsViewType.Transaction(
         icon = categoryIconMapper(categoryId, type),
         label = categoryLabelMapper(categoryId, type),
-        amount = buildString {
-            append(if (isIncome) "+" else "-")
-            append(currency)
-            append(amount.toInt())
-        },
+        amount = "${if (isIncome) "+" else "-"} ${amount.formatAmount(currency)}",
         id = id
     )
 }
@@ -49,7 +46,7 @@ object TransactionsUiMapper {
 
                 val header = TransactionsViewType.Header(
                     date = date.toUiDate(),
-                    total = "Expenses: $currency${totalExpense.toInt()}  •  Income: $currency${totalIncome.toInt()}"
+                    total = "Expenses: ${(-totalExpense).formatAmount(currency)}  •  Income: ${totalIncome.formatAmount(currency)}"
                 )
 
                 val rows = items.map { it.toTransactionViewType() }

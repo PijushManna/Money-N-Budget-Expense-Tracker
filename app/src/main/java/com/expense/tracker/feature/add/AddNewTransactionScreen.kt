@@ -2,6 +2,7 @@ package com.expense.tracker.feature.add
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -189,7 +190,7 @@ fun CategoryGrid(
 ) {
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
-        modifier = modifier.padding(16.dp),
+        modifier = modifier.padding(16.dp).animateContentSize(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {

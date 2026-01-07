@@ -79,7 +79,7 @@ internal fun DetailsScreenContainer(state: DetailsState, onBack: () -> Unit, onE
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                TextButton(onClick = { /*TODO*/ }) {
+                TextButton(onClick = { onDelete() }) {
                     Text(text = "Delete")
                 }
                 Spacer(modifier = Modifier.width(8.dp))

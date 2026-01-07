@@ -18,7 +18,8 @@ data class TransactionEntity(
     val categoryId: Long,
 
     val timestamp: Long = System.currentTimeMillis(),
-    val note: String? = null
+    val note: String? = null,
+    val currency: String = "₹"
 )
 
 @Keep

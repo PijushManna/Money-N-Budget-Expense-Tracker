@@ -22,7 +22,8 @@ data class AddNewTransactionUiState(
     val categories: List<Category> = expenseCategories.values.toList(),
     val selectedCategory: Category = Category(),
     val amount: String = "0",
-    val note: String = ""
+    val note: String = "",
+    val currency: String = "₹"
 )
 
 @HiltViewModel
@@ -73,7 +74,8 @@ class AddNewTransactionViewModel @Inject constructor(
                 amount = uiState.amount.toDouble(),
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
                 categoryId = uiState.selectedCategory.id,
-                note = uiState.note
+                note = uiState.note,
+                currency = uiState.currency
             )
             transactionRepository.addTransaction(transaction)
             uiState = uiState.copy(

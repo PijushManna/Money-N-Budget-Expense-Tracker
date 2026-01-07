@@ -23,18 +23,20 @@ class HomeViewModel @Inject constructor(
         combine(
             transactionRepository.getAllTransactions(),
             transactionRepository.getTotalIncome(),
-            transactionRepository.getTotalExpense()
-        ) { transactions, income, expense ->
+            transactionRepository.getTotalExpense(),
+            transactionRepository.getFirstTransaction()
+        ) { transactions, income, expense, firstTransaction ->
             val transactionViewTypes = TransactionsUiMapper.map(transactions)
             val balance = income - expense
+            val currency = firstTransaction?.currency ?: "₹"
 
             _uiState.update { currentState ->
                 currentState.copy(
                     transactions = transactionViewTypes,
                     overview = currentState.overview.copy(
-                        totalIncome = "₹${"%.2f".format(income)}",
-                        totalExpense = "₹${"%.2f".format(expense)}",
-                        totalBalance = "₹${"%.2f".format(balance)}"
+                        totalIncome = "$currency${income.toInt()}",
+                        totalExpense = "$currency${expense.toInt()}",
+                        totalBalance = "$currency${balance.toInt()}"
                     )
                 )
             }

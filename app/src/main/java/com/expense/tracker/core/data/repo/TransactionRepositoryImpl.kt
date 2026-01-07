@@ -23,6 +23,10 @@ class TransactionRepositoryImpl(
         return transactionDao.getAllTransactions()
     }
 
+    override fun getFirstTransaction(): Flow<TransactionEntity?> {
+        return transactionDao.getFirstTransaction()
+    }
+
     override fun getTotalIncome(): Flow<Double> {
         return transactionDao.getTotalAmount(TransactionType.INCOME)
             .map { it ?: 0.0 }

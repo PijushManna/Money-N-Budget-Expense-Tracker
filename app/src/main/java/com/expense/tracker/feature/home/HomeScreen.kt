@@ -49,6 +49,8 @@ fun HomeScreen(
     navController: NavController
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val overviewUiState by viewModel.overviewUiState.collectAsState()
+
     Scaffold(modifier = modifier, topBar = {
         Header(
             config = HeaderConfig(
@@ -67,7 +69,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            Overview(Modifier, uiState.overview)
+            Overview(Modifier, uiState = overviewUiState)
             PendingTransactions(uiState, viewModel::verifyRecurringPayment)
             TransactionDetails(uiState.transactions, navController)
         }

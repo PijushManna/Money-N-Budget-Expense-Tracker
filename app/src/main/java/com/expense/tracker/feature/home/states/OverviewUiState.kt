@@ -6,4 +6,6 @@ data class OverviewUiState(
     val totalIncome: String,
     val totalExpense: String,
     val totalBalance: String,
-)
+){
+    constructor():this("","","","","")
+}

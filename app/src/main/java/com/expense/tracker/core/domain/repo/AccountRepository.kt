@@ -8,4 +8,5 @@ interface AccountRepository {
     suspend fun insertAccount(account: AccountEntity)
 
     fun getAllAccounts(): Flow<List<AccountEntity>>
+    fun getTotalBalance():Flow<Double>
 }

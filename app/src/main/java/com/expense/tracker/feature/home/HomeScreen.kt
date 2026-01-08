@@ -13,8 +13,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -31,10 +34,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.expense.tracker.R
+import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.feature.common.Footer
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
+import com.expense.tracker.feature.home.states.HomeUiState
 import com.expense.tracker.feature.home.states.OverviewUiState
+import com.expense.tracker.feature.home.states.PendingRecurringTransaction
 
 @Composable
 fun HomeScreen(
@@ -56,11 +62,75 @@ fun HomeScreen(
             navController.navigate(it)
         }
     }) {
-        Column(modifier = modifier
-            .fillMaxSize()
-            .padding(it)) {
+        Column(
+            modifier = modifier
+                .fillMaxSize()
+                .padding(it)
+        ) {
             Overview(Modifier, uiState.overview)
+            PendingTransactions(uiState, viewModel::verifyRecurringPayment)
             TransactionDetails(uiState.transactions, navController)
+        }
+    }
+}
+
+@Composable
+fun PendingTransactions(
+    uiState: HomeUiState,
+    onVerifyClick: (PendingRecurringTransaction) -> Unit
+) {
+    if (uiState.pendingTransactions.isNotEmpty()) {
+        Column {
+            Text(
+                text = "Pending Recurring Transactions",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(16.dp)
+            )
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp)
+            ) {
+                items(uiState.pendingTransactions) { transaction ->
+                    PendingRecurringTransactionRow(
+                        transaction = transaction,
+                        onVerifyClick = onVerifyClick
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun PendingRecurringTransactionRow(
+    transaction: PendingRecurringTransaction,
+    onVerifyClick: (PendingRecurringTransaction) -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column {
+            Text(text = transaction.title, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                text = transaction.frequencyLabel,
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                text = transaction.amountText,
+                style = MaterialTheme.typography.bodyLarge,
+                color = if (transaction.type == TransactionType.INCOME) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
+            )
+            IconButton(onClick = { onVerifyClick(transaction) }) {
+                Icon(imageVector = Icons.Default.Check, contentDescription = "Verify")
+            }
         }
     }
 }
@@ -76,7 +146,7 @@ fun HomeScreenContainer(
 
 @Composable
 fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
-    Row(modifier = modifier.fillMaxWidth()){
+    Row(modifier = modifier.fillMaxWidth()) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier.padding(8.dp)
@@ -173,7 +243,7 @@ fun ColumnScope.TransactionDetails(transactions: List<TransactionsViewType>, nav
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable{
+                            .clickable {
                                 navController.navigate("details/${it.id}")
                             }
                             .padding(vertical = 8.dp, horizontal = 12.dp)
@@ -196,5 +266,5 @@ fun ColumnScope.TransactionDetails(transactions: List<TransactionsViewType>, nav
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen(navController = rememberNavController())
+    HomeScreenContainer()
 }

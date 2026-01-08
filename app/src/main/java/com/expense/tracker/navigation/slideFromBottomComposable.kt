@@ -11,7 +11,7 @@ import androidx.navigation.compose.composable
 
 fun NavGraphBuilder.slideFromBottomComposable(
     route: String,
-    duration: Int = 400,
+    duration: Int = 700,
     arguments: List<NamedNavArgument> = emptyList(),
     content: @Composable (NavBackStackEntry) -> Unit
 ) {

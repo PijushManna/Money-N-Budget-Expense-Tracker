@@ -129,7 +129,7 @@ private fun RecurringPaymentScreen(
                 value = uiState.amount,
                 onValueChange = onAmountChange,
                 label = { Text("Amount") },
-                placeholder = { Text("eg. ₹199") },
+                placeholder = { Text("eg. 199") },
                 prefix = { Text("₹") },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 singleLine = true,
@@ -194,6 +194,7 @@ private fun RecurringPaymentScreen(
                     }
                 }
             }
+            /* --- Category ----*/
 
             /* ---------- Start Date ---------- */
             Column {

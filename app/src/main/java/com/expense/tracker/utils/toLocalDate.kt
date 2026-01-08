@@ -9,5 +9,8 @@ fun Long.toLocalDate(): LocalDate =
         .atZone(ZoneId.systemDefault())
         .toLocalDate()
 
+fun LocalDate.toLong(): Long =
+    this.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+
 fun LocalDate.toUiDate(): String =
     format(java.time.format.DateTimeFormatter.ofPattern("d MMM, EEEE"))

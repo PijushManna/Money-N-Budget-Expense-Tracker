@@ -4,8 +4,10 @@ import com.expense.tracker.core.data.local.dao.TransactionDao
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.domain.repo.TransactionRepository
+import com.expense.tracker.utils.toLong
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 class TransactionRepositoryImpl(
     private val transactionDao: TransactionDao
@@ -29,6 +31,10 @@ class TransactionRepositoryImpl(
 
     override fun getFirstTransaction(): Flow<TransactionEntity?> {
         return transactionDao.getFirstTransaction()
+    }
+
+    override fun getTransactionsBetween(startDate: LocalDate, endDate: LocalDate): Flow<List<TransactionEntity>> {
+        return transactionDao.getTransactionsBetween(startDate.toLong(), endDate.toLong())
     }
 
     override fun getTotalIncome(): Flow<Double> {

@@ -57,6 +57,7 @@ dependencies {
     implementation(libs.androidx.compose.navigation)
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.animation)
+    implementation("androidx.compose.material3:material3-android:1.2.1")
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

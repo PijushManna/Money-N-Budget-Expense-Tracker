@@ -2,6 +2,7 @@ package com.expense.tracker.core.domain.repo
 
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 interface TransactionRepository {
     suspend fun addTransaction(transaction: TransactionEntity)
@@ -12,4 +13,5 @@ interface TransactionRepository {
     fun getTotalIncome(): Flow<Double>
     fun getTotalExpense(): Flow<Double>
     fun getTransactionById(id: Long): Flow<TransactionEntity?>
+    fun getTransactionsBetween(startDate: LocalDate, endDate: LocalDate): Flow<List<TransactionEntity>>
 }

@@ -38,6 +38,9 @@ interface TransactionDao {
         end: Long
     ): Flow<List<TransactionEntity>>
 
+    @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end ORDER BY timestamp DESC")
+    fun getTransactionsBetween(start: Long, end: Long): Flow<List<TransactionEntity>>
+
     @Query("SELECT SUM(amount) FROM transactions WHERE type = :type")
     fun getTotalAmount(type: TransactionType): Flow<Double?>
 

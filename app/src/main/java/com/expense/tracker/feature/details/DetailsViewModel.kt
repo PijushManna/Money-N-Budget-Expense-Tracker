@@ -41,13 +41,13 @@ class DetailsViewModel @Inject constructor(
                                     transaction to category
                                 }
                         }.collectLatest { (transaction, category) ->
-                            if (transaction != null) {
+                            if (transaction != null && category != null) {
                                 _state.value = DetailsState(
                                     id = transaction.id,
                                     title = transaction.title,
                                     amount = "%.2f".format(transaction.amount),
                                     type = transaction.type,
-                                    category = category?.name ?: "Unknown",
+                                    category = category.name,
                                     date = SimpleDateFormat(
                                         "dd MMM yyyy, hh:mm a",
                                         Locale.getDefault()

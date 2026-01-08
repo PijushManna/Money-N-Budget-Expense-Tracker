@@ -2,6 +2,7 @@ package com.expense.tracker.core.di
 
 import android.content.Context
 import androidx.room.Room
+import com.expense.tracker.core.data.local.dao.AccountDao
 import com.expense.tracker.core.data.local.dao.BudgetDao
 import com.expense.tracker.core.data.local.dao.CategoryDao
 import com.expense.tracker.core.data.local.dao.RecurringPaymentDao
@@ -23,7 +24,7 @@ object DbModule {
     fun provideDatabase(@ApplicationContext context: Context): BudgetDatabase =
         Room.databaseBuilder(
             context, BudgetDatabase::class.java, "budget_db"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
 
     @Provides
     @Singleton
@@ -40,4 +41,8 @@ object DbModule {
     @Provides
     @Singleton
     fun bindRecurringPaymentDao(db: BudgetDatabase): RecurringPaymentDao = db.recurringPaymentDao()
+
+    @Provides
+    @Singleton
+    fun bindAccountDao(db: BudgetDatabase): AccountDao = db.accountDao()
 }

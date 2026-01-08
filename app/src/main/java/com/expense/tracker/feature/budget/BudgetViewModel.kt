@@ -28,7 +28,7 @@ class BudgetViewModel(
         viewModelScope.launch {
             combine(
                 transactionRepository.getAllTransactions(),
-                categoryRepository.getCategories(),
+                categoryRepository.getAllCategories(),
                 transactionRepository.getTotalIncome(),
                 transactionRepository.getTotalExpense()
             ) { transactions, categories, income, expense ->

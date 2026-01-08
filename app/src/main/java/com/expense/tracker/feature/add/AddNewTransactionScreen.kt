@@ -34,6 +34,8 @@ import androidx.compose.material.icons.filled.EventRepeat
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CameraAlt
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -44,7 +46,10 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -56,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import com.expense.tracker.core.data.local.entities.AccountEntity
 import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.core.domain.models.incomeCategories
@@ -86,14 +92,15 @@ fun AddNewTransactionScreen(
                     Icon(Icons.Default.EventRepeat, contentDescription = "Event Repeat")
                 }
             }))
-    }) {
+    }) { paddingValues ->
         AddNewTransactionScreenContainer(
-            modifier = Modifier.padding(it),
+            modifier = Modifier.padding(paddingValues),
             uiState = uiState,
             onTabSelected = viewModel::onTabSelected,
             onCategorySelected = viewModel::onCategorySelected,
             onKeyPress = viewModel::onKeyPress,
-            onNoteChange = viewModel::onNoteChange
+            onNoteChange = viewModel::onNoteChange,
+            onAccountSelected = viewModel::onAccountSelected
         )
     }
 }
@@ -106,7 +113,8 @@ private fun AddNewTransactionScreenContainer(
     onTabSelected: (Int) -> Unit,
     onCategorySelected: (Category) -> Unit,
     onKeyPress: (String) -> Unit,
-    onNoteChange: (String) -> Unit
+    onNoteChange: (String) -> Unit,
+    onAccountSelected: (AccountEntity) -> Unit
 ) {
     val pagerState =
         rememberPagerState(initialPage = uiState.selectedTabIndex) { uiState.tabs.size }
@@ -160,8 +168,11 @@ private fun AddNewTransactionScreenContainer(
             AddAmountScreen(
                 amount = uiState.amount,
                 note = uiState.note,
+                accounts = uiState.accounts,
+                selectedAccount = uiState.selectedAccount,
                 onNoteChange = onNoteChange,
-                onKeyPress = onKeyPress
+                onKeyPress = onKeyPress,
+                onAccountSelected = onAccountSelected
             )
         }
     }
@@ -177,7 +188,9 @@ fun AddNewTransactionScreenPreview() {
             onTabSelected = {},
             onCategorySelected = {},
             onKeyPress = {},
-            onNoteChange = {})
+            onNoteChange = {},
+            onAccountSelected = {}
+        )
     }
 }
 
@@ -281,8 +294,11 @@ fun TransactionTabs(
 private fun AddAmountScreen(
     amount: String,
     note: String,
+    accounts: List<AccountEntity>,
+    selectedAccount: AccountEntity?,
     onNoteChange: (String) -> Unit,
     onKeyPress: (String) -> Unit,
+    onAccountSelected: (AccountEntity) -> Unit,
     backgroundColor: Color = Color(0xFFF2F3F5)
 ) {
     Column(
@@ -290,7 +306,7 @@ private fun AddAmountScreen(
             .background(backgroundColor)
             .padding(16.dp)
     ) {
-        AmountHeader(amount)
+        AmountHeader(amount, accounts, selectedAccount, onAccountSelected)
         Spacer(Modifier.height(16.dp))
         NoteInput(note, onNoteChange)
         Spacer(Modifier.height(16.dp))
@@ -299,24 +315,54 @@ private fun AddAmountScreen(
 }
 
 @Composable
-fun AmountHeader(amount: String) {
+fun AmountHeader(
+    amount: String,
+    accounts: List<AccountEntity>,
+    selectedAccount: AccountEntity?,
+    onAccountSelected: (AccountEntity) -> Unit
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .background(Color.LightGray, RoundedCornerShape(8.dp)),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(Icons.Outlined.Badge, contentDescription = null)
-        }
+        AccountDropdown(accounts, selectedAccount, onAccountSelected)
 
         Text(
             text = amount, fontSize = 36.sp, fontWeight = FontWeight.Medium
         )
+    }
+}
+
+@Composable
+fun AccountDropdown(
+    accounts: List<AccountEntity>,
+    selectedAccount: AccountEntity?,
+    onAccountSelected: (AccountEntity) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Box {
+        Row(
+            modifier = Modifier.clickable { expanded = true },
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(Icons.Outlined.Badge, contentDescription = null)
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(text = selectedAccount?.name ?: "Select Account")
+        }
+
+        DropdownMenu(
+            expanded = expanded,
+            onDismissRequest = { expanded = false }
+        ) {
+            accounts.forEach { account ->
+                DropdownMenuItem(text = { Text(text = account.name) }, onClick = {
+                    onAccountSelected(account)
+                    expanded = false
+                })
+            }
+        }
     }
 }
 

@@ -5,10 +5,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.expense.tracker.core.data.local.convertors.Converters
 import com.expense.tracker.core.data.local.convertors.RecurringConverters
+import com.expense.tracker.core.data.local.dao.AccountDao
 import com.expense.tracker.core.data.local.dao.BudgetDao
 import com.expense.tracker.core.data.local.dao.CategoryDao
 import com.expense.tracker.core.data.local.dao.RecurringPaymentDao
 import com.expense.tracker.core.data.local.dao.TransactionDao
+import com.expense.tracker.core.data.local.entities.AccountEntity
 import com.expense.tracker.core.data.local.entities.BudgetEntity
 import com.expense.tracker.core.data.local.entities.CategoryEntity
 import com.expense.tracker.core.data.local.entities.RecurringPaymentEntity
@@ -19,9 +21,10 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
         TransactionEntity::class,
         CategoryEntity::class,
         BudgetEntity::class,
-        RecurringPaymentEntity::class
+        RecurringPaymentEntity::class,
+        AccountEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 @TypeConverters(Converters::class, RecurringConverters::class)
@@ -31,4 +34,5 @@ abstract class BudgetDatabase : RoomDatabase() {
     abstract fun categoryDao(): CategoryDao
     abstract fun budgetDao(): BudgetDao
     abstract fun recurringPaymentDao(): RecurringPaymentDao
+    abstract fun accountDao(): AccountDao
 }

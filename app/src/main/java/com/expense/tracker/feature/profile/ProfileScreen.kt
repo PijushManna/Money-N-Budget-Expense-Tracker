@@ -17,13 +17,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Feedback
-import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.ThumbUp
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -49,7 +47,17 @@ fun ProfileScreen(
     navController: NavController,
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
-    val user by viewModel.user.collectAsState()
+    val state by viewModel.state.collectAsState()
+
+    if (state.isAddAccountDialogVisible) {
+        AddAccountDialog(
+            onDismiss = { viewModel.hideAddAccountDialog() },
+            onConfirm = {
+                viewModel.addAccount(it)
+                viewModel.hideAddAccountDialog()
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -79,22 +87,11 @@ fun ProfileScreen(
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column {
-                        if (user != null) {
-                            Text(
-                                text = "Welcome",
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onPrimary
-                            )
-                            Text(
-                                text = user?.uid ?: "",
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                            )
-                        } else {
-                            Button(onClick = { viewModel.signIn() }) {
-                                Text(text = "Sign In")
-                            }
-                        }
+                        Text(
+                            text = "Welcome",
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
@@ -104,22 +101,26 @@ fun ProfileScreen(
             Footer(currentRoute = "profile") {
                 navController.navigate(it)
             }
-        }) {
+        }) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(it)
+                .padding(paddingValues)
                 .background(MaterialTheme.colorScheme.background)
         ) {
 
             // Header
             AccountsPager(
-                accounts = listOf(
-                    AccountUi("1", "Main Account", "$2,450.00", "Checking"),
-                    AccountUi("2", "Savings", "$12,800.00")
-                ),
+                accounts = state.accounts.map { account ->
+                    AccountUi(
+                        id = account.id.toString(),
+                        name = account.name,
+                        balance = account.balance.toString(),
+                        subtitle = account.type
+                    )
+                },
                 onAccountClick = { },
-                onAddAccountClick = { },
+                onAddAccountClick = { viewModel.showAddAccountDialog() },
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -135,9 +136,6 @@ fun ProfileScreen(
             )
             ProfileItem(icon = Icons.Default.Settings, title = "Settings", onClick = {})
             ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps", onClick = {})
-            if (user != null) {
-                ProfileItem(icon = Icons.Default.Logout, title = "Sign Out", onClick = { viewModel.signOut() })
-            }
         }
     }
 }

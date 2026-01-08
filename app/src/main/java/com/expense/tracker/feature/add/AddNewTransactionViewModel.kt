@@ -6,15 +6,19 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.expense.tracker.core.data.local.entities.AccountEntity
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.core.domain.models.incomeCategories
 import com.expense.tracker.core.domain.repo.TransactionRepository
+import com.expense.tracker.core.domain.usecase.GetAllAccountsUseCase
 import com.expense.tracker.utils.formatAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,12 +31,15 @@ data class AddNewTransactionUiState(
     val selectedCategory: Category = Category(),
     val amount: String = "0",
     val note: String = "",
-    val currency: String = "₹"
+    val currency: String = "₹",
+    val accounts: List<AccountEntity> = emptyList(),
+    val selectedAccount: AccountEntity? = null
 )
 
 @HiltViewModel
 class AddNewTransactionViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
+    private val getAllAccountsUseCase: GetAllAccountsUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -40,6 +47,8 @@ class AddNewTransactionViewModel @Inject constructor(
         private set
 
     init {
+        getAllAccounts()
+
         viewModelScope.launch {
             savedStateHandle.get<Long>("id")?.let { id ->
                 if (id >= 0) {
@@ -53,7 +62,8 @@ class AddNewTransactionViewModel @Inject constructor(
                                 amount = transaction.amount.formatAmount(transaction.currency),
                                 note = transaction.note ?: "",
                                 currency = transaction.currency,
-                                showNumpad = true
+                                showNumpad = true,
+                                selectedAccount = uiState.accounts.find { it.id == transaction.accountId }
                             )
                         }
                     }
@@ -61,6 +71,16 @@ class AddNewTransactionViewModel @Inject constructor(
             }
         }
     }
+
+    private fun getAllAccounts() {
+        getAllAccountsUseCase().onEach { accounts ->
+            uiState = uiState.copy(
+                accounts = accounts,
+                selectedAccount = accounts.firstOrNull()
+            )
+        }.launchIn(viewModelScope)
+    }
+
     fun onTabSelected(index: Int) {
         val newCategories = when(index) {
             0 -> incomeCategories.values.toList()
@@ -94,6 +114,10 @@ class AddNewTransactionViewModel @Inject constructor(
         uiState = uiState.copy(note = note)
     }
 
+    fun onAccountSelected(account: AccountEntity) {
+        uiState = uiState.copy(selectedAccount = account)
+    }
+
     private fun saveTransaction() {
         viewModelScope.launch {
             var transaction = TransactionEntity(
@@ -102,7 +126,8 @@ class AddNewTransactionViewModel @Inject constructor(
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
                 categoryId = uiState.selectedCategory.id,
                 note = uiState.note,
-                currency = uiState.currency
+                currency = uiState.currency,
+                accountId = uiState.selectedAccount?.id ?: 0L
             )
             if (uiState.id != -1L) transaction = transaction.copy(id = uiState.id)
             transactionRepository.addTransaction(transaction)

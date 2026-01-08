@@ -16,6 +16,7 @@ data class TransactionEntity(
 
     val type: TransactionType,
     val categoryId: Long,
+    val accountId: Long = 0L,
 
     val timestamp: Long = System.currentTimeMillis(),
     val note: String? = null,

@@ -34,16 +34,18 @@ class HomeViewModel @Inject constructor(
     val overviewUiState= combine(
         transactionRepository.getTotalIncome(),
         transactionRepository.getTotalExpense(),
-        accountRepository.getTotalBalance(),
+        accountRepository.getLisOfBalance(),
         transactionRepository.getFirstTransaction()
     ) { income, expense, balance, firstTransaction ->
         val currency = firstTransaction?.currency ?: "₹"
+        val totalBalance = balance.sum()
         OverviewUiState(
             "2026",
             "Jan",
             income.formatAmount(currency),
             (-expense).formatAmount(currency),
-            (balance - (expense - income)).formatAmount(currency)
+            (totalBalance - (expense - income)).formatAmount(currency),
+            formatProfitAndBalance(balance, expense, income, currency)
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), OverviewUiState())
 
@@ -105,4 +107,21 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+    private fun formatProfitAndBalance(
+        balances: List<Double>,
+        expense: Double,
+        income: Double,
+        currency: String
+    ): String {
+        val profit = income - expense
+
+        val formattedProfit = profit.formatAmount( currency)
+        val formattedBalances = balances.joinToString(" + ") {
+            it.formatAmount( currency)
+        }
+
+        return "Profit ($formattedProfit) • Balance ($formattedBalances)"
+    }
+
 }

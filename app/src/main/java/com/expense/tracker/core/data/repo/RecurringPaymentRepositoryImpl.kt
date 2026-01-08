@@ -9,6 +9,10 @@ import javax.inject.Inject
 class RecurringPaymentRepositoryImpl @Inject constructor(
     private val recurringPaymentDao: RecurringPaymentDao
 ) : RecurringPaymentRepository {
+    override fun getAllRecurringPayments(): Flow<List<RecurringPaymentEntity>> {
+        return recurringPaymentDao.getAll()
+    }
+
     override fun getActiveRecurringPayments(): Flow<List<RecurringPaymentEntity>> {
         return recurringPaymentDao.getActiveRecurringPayments()
     }
@@ -25,8 +29,8 @@ class RecurringPaymentRepositoryImpl @Inject constructor(
         recurringPaymentDao.update(payment)
     }
 
-    override suspend fun deleteRecurringPayment(payment: RecurringPaymentEntity) {
-        recurringPaymentDao.delete(payment)
+    override suspend fun deleteRecurringPayment(paymentId: Long) {
+        recurringPaymentDao.delete(paymentId)
     }
 
     override suspend fun deactivateRecurringPayment(id: Long) {

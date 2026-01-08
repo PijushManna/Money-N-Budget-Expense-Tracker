@@ -1,5 +1,9 @@
 package com.expense.tracker.feature.profile
 
+import android.content.ActivityNotFoundException
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -33,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -48,6 +53,7 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val context = LocalContext.current
 
     if (state.isAddAccountDialogVisible) {
         AddAccountDialog(
@@ -126,13 +132,19 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(8.dp))
 
             ProfileItem(
-                icon = Icons.Default.ThumbUp, title = "Recommend to friends", onClick = {}
+                icon = Icons.Default.ThumbUp, title = "Recommend to friends", onClick = {
+                    recommendToFriends(context)
+                }
             )
-            ProfileItem(icon = Icons.Default.Feedback, title = "Provide Feedback", onClick = {})
-            ProfileItem(icon = Icons.Default.StarRate, title = "Rate Us", onClick = {})
+            ProfileItem(icon = Icons.Default.Feedback, title = "Provide Feedback", onClick = {
+                provideFeedback(context)
+            })
+            ProfileItem(icon = Icons.Default.StarRate, title = "Rate Us", onClick = {
+                rateUs(context)
+            })
             ProfileItem(
                 icon = Icons.Default.Refresh, title = "Recurring Payments",
-                onClick = { navController.navigate(Screen.RecurringPayment.route) }
+                onClick = { navController.navigate(Screen.ManageRecurringPayment.route) }
             )
             ProfileItem(icon = Icons.Default.Settings, title = "Settings", onClick = {})
             ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps", onClick = {})
@@ -184,6 +196,49 @@ fun ProfileItem(
         }
     }
 }
+fun recommendToFriends(context: Context) {
+    val intent = Intent(Intent.ACTION_SEND).apply {
+        type = "text/plain"
+        putExtra(
+            Intent.EXTRA_TEXT,
+            "Hey! I'm using this great expense tracker app. Check it out:\n" +
+                    "https://play.google.com/store/apps/details?id=${context.packageName}"
+        )
+    }
+    context.startActivity(Intent.createChooser(intent, "Share via"))
+}
+
+fun provideFeedback(context: Context) {
+    val intent = Intent(Intent.ACTION_SENDTO).apply {
+        data = Uri.parse("mailto:")
+        putExtra(Intent.EXTRA_EMAIL, arrayOf("support@yourapp.com"))
+        putExtra(Intent.EXTRA_SUBJECT, "App Feedback")
+        putExtra(Intent.EXTRA_TEXT, "Hi,\n\nI would like to share the following feedback:\n")
+    }
+
+    if (intent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(intent)
+    }
+}
+
+fun rateUs(context: Context) {
+    val appPackage = context.packageName
+    val uri = Uri.parse("market://details?id=$appPackage")
+    val intent = Intent(Intent.ACTION_VIEW, uri)
+
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        // Play Store not available → open in browser
+        context.startActivity(
+            Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://play.google.com/store/apps/details?id=$appPackage")
+            )
+        )
+    }
+}
+
 
 @Preview
 @Composable

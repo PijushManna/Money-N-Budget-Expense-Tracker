@@ -28,6 +28,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -169,9 +170,6 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
 
         LazyRow(horizontalArrangement = Arrangement.SpaceAround) {
             item {
-
-            }
-            item {
                 Column(
                     horizontalAlignment = Alignment.Start,
                     modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
@@ -212,7 +210,13 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
             }
         }
     }
-
+    Text(
+        uiState.totalBalanceCalculation,
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+        textAlign = TextAlign.End
+    )
     HorizontalDivider(thickness = 0.5.dp)
 }
 

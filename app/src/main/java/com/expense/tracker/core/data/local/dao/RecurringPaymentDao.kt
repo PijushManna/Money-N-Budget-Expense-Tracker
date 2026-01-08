@@ -1,7 +1,6 @@
 package com.expense.tracker.core.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
@@ -18,8 +17,11 @@ interface RecurringPaymentDao {
     @Update
     suspend fun update(payment: RecurringPaymentEntity)
 
-    @Delete
-    suspend fun delete(payment: RecurringPaymentEntity)
+    @Query("DELETE FROM recurring_payments WHERE id = :paymentId")
+    suspend fun delete(paymentId: Long)
+
+    @Query("SELECT * FROM recurring_payments")
+    fun getAll(): Flow<List<RecurringPaymentEntity>>
 
     @Query("SELECT * FROM recurring_payments WHERE isActive = 1")
     fun getActiveRecurringPayments(): Flow<List<RecurringPaymentEntity>>

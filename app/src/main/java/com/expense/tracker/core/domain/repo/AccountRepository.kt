@@ -9,4 +9,5 @@ interface AccountRepository {
 
     fun getAllAccounts(): Flow<List<AccountEntity>>
     fun getTotalBalance():Flow<Double>
+    fun getLisOfBalance():Flow<List<Double>>
 }

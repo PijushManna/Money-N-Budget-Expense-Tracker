@@ -18,4 +18,7 @@ interface AccountDao {
 
     @Query("SELECT SUM(balance) FROM accounts")
     fun getTotalBalance(): Flow<Double>
+
+    @Query("SELECT balance FROM accounts")
+    fun getLisOfBalance(): Flow<List<Double>>
 }

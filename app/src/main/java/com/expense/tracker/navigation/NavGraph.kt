@@ -13,6 +13,7 @@ import com.expense.tracker.feature.chart.ChartsScreen
 import com.expense.tracker.feature.details.DetailsScreen
 import com.expense.tracker.feature.home.HomeScreen
 import com.expense.tracker.feature.profile.ProfileScreen
+import com.expense.tracker.feature.recurring.ui.ManageRecurringPaymentsScreen
 import com.expense.tracker.feature.recurring.ui.RecurringPaymentScreen
 import slideFromBottomComposable
 
@@ -58,6 +59,9 @@ fun NavGraph() {
                 navController.popBackStack()
             }
         }
+        composable(Screen.ManageRecurringPayment.route) {
+            ManageRecurringPaymentsScreen(navController = navController)
+        }
     }
 }
 
@@ -69,4 +73,5 @@ sealed class Screen(val route: String) {
     object Add : Screen("add")
     object Details : Screen("details")
     object RecurringPayment : Screen("recurring_payment")
+    object ManageRecurringPayment : Screen("manage_rp")
 }

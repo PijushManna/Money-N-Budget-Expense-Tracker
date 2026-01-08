@@ -71,11 +71,11 @@ fun PendingRecurringTransactionRow(
 
 @Composable
 fun PendingRecurringTransactionRow(
+    modifier: Modifier = Modifier,
     title: String,
     amountText: String,
     frequencyLabel: String,
     onVerifyClick: () -> Unit,
-    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier

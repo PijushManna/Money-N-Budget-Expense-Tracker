@@ -6,19 +6,14 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.domain.repo.AccountRepository
 import com.expense.tracker.core.domain.repo.RecurringPaymentRepository
 import com.expense.tracker.core.domain.repo.TransactionRepository
-import com.expense.tracker.feature.home.states.HomeUiState
 import com.expense.tracker.feature.home.states.OverviewUiState
 import com.expense.tracker.feature.home.states.PendingRecurringTransaction
 import com.expense.tracker.utils.formatAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -26,18 +21,14 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val recurringPaymentRepository: RecurringPaymentRepository,
-    private val accountRepository: AccountRepository
+    accountRepository: AccountRepository,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(HomeUiState())
-    val uiState = _uiState.asStateFlow()
-
-    val overviewUiState= combine(
+    private val currency: String = "₹"
+    val overviewUiState = combine(
         transactionRepository.getTotalIncome(),
         transactionRepository.getTotalExpense(),
         accountRepository.getLisOfBalance(),
-        transactionRepository.getFirstTransaction()
-    ) { income, expense, balance, firstTransaction ->
-        val currency = firstTransaction?.currency ?: "₹"
+    ) { income, expense, balance ->
         val totalBalance = balance.sum()
         OverviewUiState(
             "2026",
@@ -53,72 +44,52 @@ class HomeViewModel @Inject constructor(
         .map { transactions -> TransactionsUiMapper.map(transactions) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
 
-    init {
-        combine(
-            transactionRepository.getAllTransactions(),
-            transactionRepository.getTotalIncome(),
-            transactionRepository.getTotalExpense(),
-            transactionRepository.getFirstTransaction(),
-            recurringPaymentRepository.getActiveRecurringPayments(),
-        ) { transactions, income, expense, firstTransaction, recurringPayments ->
-            val transactionViewTypes = TransactionsUiMapper.map(transactions)
-            val balance = income - expense
-            val currency = firstTransaction?.currency ?: "₹"
+    val pendingTransactions = recurringPaymentRepository.getActiveRecurringPayments().map {
+        it.map { it ->
+            PendingRecurringTransaction(
+                id = it.id,
+                title = it.title,
+                amountText = it.amount.formatAmount(currency),
+                frequencyLabel = it.frequency.name.lowercase()
+                    .replaceFirstChar { char -> char.uppercase() },
+                type = it.type
+            )
+        }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
 
-            _uiState.update { currentState ->
-                currentState.copy(
-                    transactions = transactionViewTypes,
-                    pendingTransactions = recurringPayments.map {
-                        PendingRecurringTransaction(
-                            id = it.id,
-                            title = it.title,
-                            amountText = it.amount.formatAmount(currency),
-                            frequencyLabel = it.frequency.name.lowercase()
-                                .replaceFirstChar { char -> char.uppercase() },
-                            type = it.type
-                        )
-                    },
-                    overview = currentState.overview.copy(
-                        totalIncome = income.formatAmount(currency),
-                        totalExpense = (-expense).formatAmount(currency),
-                        totalBalance = balance.formatAmount(currency),
-                    )
-                )
-            }
-        }.launchIn(viewModelScope)
-    }
-
-    fun verifyRecurringPayment(transaction: PendingRecurringTransaction) {
+    fun verifyRecurringPayment(
+        rpId: Long, accept: Boolean
+    ) {
         viewModelScope.launch {
+
             val recurringPayment =
-                recurringPaymentRepository.getRecurringPaymentById(transaction.id)
-            if (recurringPayment != null) {
+                recurringPaymentRepository.getRecurringPaymentById(rpId) ?: return@launch
+
+            if (accept) {
                 transactionRepository.addTransaction(
                     TransactionEntity(
                         title = recurringPayment.title,
                         amount = recurringPayment.amount,
                         type = recurringPayment.type,
-                        categoryId = 27, // Default category
+                        categoryId = recurringPayment.cid,
                         timestamp = System.currentTimeMillis(),
                         note = "Verified from recurring payment"
                     )
                 )
-                recurringPaymentRepository.deactivateRecurringPayment(transaction.id)
             }
+            recurringPaymentRepository.updateRecurringPayment(recurringPayment.copy(nextHandlingDate = recurringPayment.calculateNextHandlingDate()))
         }
     }
 
+
     private fun formatProfitAndBalance(
-        balances: List<Double>,
-        expense: Double,
-        income: Double,
-        currency: String
+        balances: List<Double>, expense: Double, income: Double, currency: String
     ): String {
         val profit = income - expense
 
-        val formattedProfit = profit.formatAmount( currency)
+        val formattedProfit = profit.formatAmount(currency)
         val formattedBalances = balances.joinToString(" + ") {
-            it.formatAmount( currency)
+            it.formatAmount(currency)
         }
 
         return "Profit ($formattedProfit) • Balance ($formattedBalances)"

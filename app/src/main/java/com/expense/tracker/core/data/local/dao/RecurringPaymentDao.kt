@@ -23,8 +23,8 @@ interface RecurringPaymentDao {
     @Query("SELECT * FROM recurring_payments")
     fun getAll(): Flow<List<RecurringPaymentEntity>>
 
-    @Query("SELECT * FROM recurring_payments WHERE isActive = 1")
-    fun getActiveRecurringPayments(): Flow<List<RecurringPaymentEntity>>
+    @Query("SELECT * FROM recurring_payments WHERE isActive = 1 AND nextHandlingDate <= :currentDate")
+    fun getActiveRecurringPayments(currentDate: Long = System.currentTimeMillis()): Flow<List<RecurringPaymentEntity>>
 
     @Query("SELECT * FROM recurring_payments WHERE id = :id")
     suspend fun getById(id: Long): RecurringPaymentEntity?

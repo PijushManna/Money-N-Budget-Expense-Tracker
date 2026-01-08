@@ -9,7 +9,7 @@ data class RecurringPaymentState(
     val title: String = "",
     val amount: String = "",
     val type: TransactionType = TransactionType.EXPENSE,
-    val selectedCategory: Category = expenseCategories.values.first(),
+    val selectedCategory: Category = expenseCategories[106] ?: expenseCategories.values.first(),
     val frequency: RecurringFrequency = RecurringFrequency.MONTHLY,
     val startDate: Long = System.currentTimeMillis(),
     val isActive: Boolean = true,

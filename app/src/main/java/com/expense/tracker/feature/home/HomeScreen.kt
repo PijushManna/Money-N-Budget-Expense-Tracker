@@ -1,6 +1,7 @@
 package com.expense.tracker.feature.home
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,17 +14,18 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,11 +37,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.expense.tracker.R
-import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.feature.common.Footer
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
-import com.expense.tracker.feature.home.states.HomeUiState
+import com.expense.tracker.feature.common.TripleActionDialog
 import com.expense.tracker.feature.home.states.OverviewUiState
 import com.expense.tracker.feature.home.states.PendingRecurringTransaction
 
@@ -49,8 +50,12 @@ fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
     navController: NavController
 ) {
-    val uiState by viewModel.uiState.collectAsState()
     val overviewUiState by viewModel.overviewUiState.collectAsState()
+    val overview by derivedStateOf { overviewUiState }
+    val transactions by viewModel.transactions.collectAsState()
+    val pendingTransactions by viewModel.pendingTransactions.collectAsState()
+    var rpId by remember { mutableStateOf<Long?>(null) }
+    var showRPDialog by remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier, topBar = {
         Header(
@@ -70,23 +75,56 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            Overview(Modifier, uiState = overviewUiState)
-            PendingTransactions(uiState, viewModel::verifyRecurringPayment)
-            TransactionDetails(uiState.transactions, navController)
+            Overview(Modifier, uiState = overview)
+            PendingTransactions(pendingTransactions){
+                showRPDialog = true
+                rpId = it.id
+            }
+            TransactionDetails(transactions , navController)
         }
     }
+
+    TripleActionDialog(
+        visible = showRPDialog,
+        title = "Confirm Recurring Payment",
+        message = "Did you complete this recurring payment?",
+
+        confirmText = "Accept",
+        onConfirm = {
+            if (rpId != null) {
+                viewModel.verifyRecurringPayment(rpId!!, true)
+                showRPDialog = false
+            }
+                    },
+
+        rejectText = "Reject",
+        onReject = {
+            if (rpId != null) {
+                viewModel.verifyRecurringPayment(rpId!!, false)
+                showRPDialog = false
+            }
+        },
+
+        neutralText = "Later",
+        onNeutral = {
+            showRPDialog = false
+        },
+
+        onDismiss = { showRPDialog = false }
+    )
+
 }
 
 @Composable
 fun PendingTransactions(
-    uiState: HomeUiState,
+    uiState: List<PendingRecurringTransaction>,
     onVerifyClick: (PendingRecurringTransaction) -> Unit
 ) {
-    if (uiState.pendingTransactions.isNotEmpty()) {
+    if (uiState.isNotEmpty()) {
         Column {
             Text(
                 text = "Pending Recurring Transactions",
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(16.dp)
             )
             LazyColumn(
@@ -94,45 +132,15 @@ fun PendingTransactions(
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp)
             ) {
-                items(uiState.pendingTransactions) { transaction ->
+                items(uiState) { transaction ->
                     PendingRecurringTransactionRow(
-                        transaction = transaction,
-                        onVerifyClick = onVerifyClick
-                    )
+                        amountText = transaction.amountText,
+                        frequencyLabel = transaction.frequencyLabel,
+                        title = transaction.title,
+                    ){
+                        onVerifyClick(transaction)
+                    }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-fun PendingRecurringTransactionRow(
-    transaction: PendingRecurringTransaction,
-    onVerifyClick: (PendingRecurringTransaction) -> Unit
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column {
-            Text(text = transaction.title, style = MaterialTheme.typography.bodyLarge)
-            Text(
-                text = transaction.frequencyLabel,
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = transaction.amountText,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (transaction.type == TransactionType.INCOME) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-            )
-            IconButton(onClick = { onVerifyClick(transaction) }) {
-                Icon(imageVector = Icons.Default.Check, contentDescription = "Verify")
             }
         }
     }
@@ -149,75 +157,80 @@ fun HomeScreenContainer(
 
 @Composable
 fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
-    Row(modifier = modifier.fillMaxWidth()) {
-        Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier.padding(8.dp)
-        ) {
-            Text(uiState.selectedYear, style = MaterialTheme.typography.bodyMedium)
-            Text(
-                uiState.selectedMonth,
-                style = MaterialTheme.typography.headlineMedium,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        shape = RoundedCornerShape(12.dp)
-                    )
-                    .clickable {}
-                    .padding(horizontal = 12.dp))
+    Column(modifier = modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
+        HorizontalDivider(thickness = 0.5.dp)
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text(uiState.selectedYear, style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    uiState.selectedMonth,
+                    style = MaterialTheme.typography.headlineMedium,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(12.dp))
+                        .background(
+                            color = MaterialTheme.colorScheme.tertiaryContainer,
+                            shape = RoundedCornerShape(12.dp)
+                        )
+                        .border(1.dp, MaterialTheme.colorScheme.tertiary,
+                            RoundedCornerShape(12.dp)
+                        )
+                        .clickable {}
+                        .padding(horizontal = 12.dp))
+            }
+            LazyRow(horizontalArrangement = Arrangement.SpaceAround) {
+                item {
+                    Column(
+                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
+                    ) {
+                        Text("Expense", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            uiState.totalExpense,
+                            modifier = Modifier.padding(top = 4.dp),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+                item {
+                    Column(
+                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
+                    ) {
+                        Text("Income", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            uiState.totalIncome,
+                            modifier = Modifier.padding(top = 4.dp),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+                item {
+                    Column(
+                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
+                    ) {
+                        Text("Balance", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            uiState.totalBalance,
+                            modifier = Modifier.padding(top = 4.dp),
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                    }
+                }
+            }
         }
-
-        LazyRow(horizontalArrangement = Arrangement.SpaceAround) {
-            item {
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
-                ) {
-                    Text("Expense", style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                        uiState.totalExpense,
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
-            item {
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
-                ) {
-                    Text("Income", style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                        uiState.totalIncome,
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
-            item {
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 18.dp)
-                ) {
-                    Text("Balance", style = MaterialTheme.typography.bodyMedium)
-                    Text(
-                        uiState.totalBalance,
-                        modifier = Modifier.padding(top = 4.dp),
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                }
-            }
-        }
+        Text(
+            uiState.totalBalanceCalculation,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            textAlign = TextAlign.End
+        )
+        HorizontalDivider(thickness = 0.5.dp)
     }
-    Text(
-        uiState.totalBalanceCalculation,
-        style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
-        textAlign = TextAlign.End
-    )
-    HorizontalDivider(thickness = 0.5.dp)
 }
 
 @Composable

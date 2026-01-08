@@ -4,7 +4,6 @@ import androidx.annotation.Keep
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.MenuBook
 import androidx.compose.material.icons.filled.Category
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Cake
 import androidx.compose.material.icons.outlined.CardGiftcard
@@ -19,9 +18,11 @@ import androidx.compose.material.icons.outlined.Face
 import androidx.compose.material.icons.outlined.Favorite
 import androidx.compose.material.icons.outlined.Flight
 import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material.icons.outlined.Interests
 import androidx.compose.material.icons.outlined.LocalGroceryStore
 import androidx.compose.material.icons.outlined.MedicalServices
 import androidx.compose.material.icons.outlined.Mic
+import androidx.compose.material.icons.outlined.Money
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Pets
 import androidx.compose.material.icons.outlined.PhoneAndroid
@@ -29,6 +30,7 @@ import androidx.compose.material.icons.outlined.Pool
 import androidx.compose.material.icons.outlined.Restaurant
 import androidx.compose.material.icons.outlined.ShoppingCart
 import androidx.compose.material.icons.outlined.SmokingRooms
+import androidx.compose.material.icons.outlined.Sync
 import androidx.compose.material.icons.outlined.WineBar
 import androidx.compose.ui.graphics.vector.ImageVector
 
@@ -45,7 +47,9 @@ val incomeCategories = listOf(
     Category(101, "Salary", Icons.Outlined.Home),
     Category(102, "Business", Icons.Outlined.Build),
     Category(103, "Gift", Icons.Outlined.CardGiftcard),
-    Category(104, "Other", Icons.Outlined.Add)
+    Category(105, "Lottery", Icons.Outlined.ConfirmationNumber),
+    Category(104, "Other", Icons.Outlined.Money),
+    Category(106, "Recurring", Icons.Outlined.Sync),
 ).associateBy(Category::id)
 
 val expenseCategories = listOf(
@@ -75,5 +79,6 @@ val expenseCategories = listOf(
     Category(24, "Kids", Icons.Outlined.ChildCare),
     Category(25, "Vegetables", Icons.Outlined.Eco),
     Category(26, "Fruits", Icons.Outlined.LocalGroceryStore),
-    Category(27, "Settings", Icons.Outlined.Add)
+    Category(27, "Others", Icons.Outlined.Interests),
+    Category(106, "Recurring", Icons.Outlined.Sync),
 ).associateBy(Category::id)

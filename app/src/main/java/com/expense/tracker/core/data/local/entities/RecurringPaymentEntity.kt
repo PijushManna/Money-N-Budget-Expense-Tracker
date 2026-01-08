@@ -11,6 +11,7 @@ data class RecurringPaymentEntity(
     val title: String,
     val amount: Double,
     val type: TransactionType, // INCOME / EXPENSE
+    val cid: Long,
     val frequency: RecurringFrequency,
     val startDate: Long, // millis
     val isActive: Boolean = true

@@ -1,5 +1,6 @@
 package com.expense.tracker.feature.recurring.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,7 +19,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
@@ -27,6 +30,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -42,6 +46,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.expense.tracker.core.data.local.entities.RecurringFrequency
 import com.expense.tracker.core.data.local.entities.TransactionType
+import com.expense.tracker.core.domain.models.Category
+import com.expense.tracker.core.domain.models.expenseCategories
+import com.expense.tracker.core.domain.models.incomeCategories
+import com.expense.tracker.feature.add.CategoryGrid
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
 import com.expense.tracker.feature.recurring.viewmodel.RecurringPaymentViewModel
@@ -52,7 +60,7 @@ import java.util.Locale
 @Composable
 fun RecurringPaymentScreen(
     viewModel: RecurringPaymentViewModel = hiltViewModel(),
-    onNavigateUp: () -> Unit
+    onNavigateUp: () -> Unit,
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -61,6 +69,9 @@ fun RecurringPaymentScreen(
         onTitleChange = viewModel::onTitleChange,
         onAmountChange = viewModel::onAmountChange,
         onTypeChange = viewModel::onTypeChange,
+        onCategoryChange = viewModel::onCategoryChange,
+        onCategorySheetOpen = viewModel::onCategorySheetOpen,
+        onCategorySheetDismiss = viewModel::onCategorySheetDismiss,
         onFrequencyChange = viewModel::onFrequencyChange,
         onStartDateChange = viewModel::onStartDateChange,
         onActiveChange = viewModel::onActiveChange,
@@ -79,14 +90,18 @@ private fun RecurringPaymentScreen(
     onTitleChange: (String) -> Unit = {},
     onAmountChange: (String) -> Unit = {},
     onTypeChange: (TransactionType) -> Unit = {},
+    onCategoryChange: (Category) -> Unit = {},
+    onCategorySheetOpen: () -> Unit = {},
+    onCategorySheetDismiss: () -> Unit = {},
     onFrequencyChange: (RecurringFrequency) -> Unit = {},
     onStartDateChange: (Long) -> Unit = {},
     onActiveChange: (Boolean) -> Unit = {},
     onDismiss: () -> Unit = {},
-    onSave: () -> Unit = {}
+    onSave: () -> Unit = {},
 ) {
     var showDatePicker by remember { mutableStateOf(false) }
     var expanded by remember { mutableStateOf(false) }
+    val categorySheetState = rememberModalBottomSheetState()
 
     Scaffold(
         topBar = {
@@ -150,7 +165,6 @@ private fun RecurringPaymentScreen(
                 }
             }
 
-
             /* ---------- Frequency ---------- */
             ExposedDropdownMenuBox(
                 expanded = expanded,
@@ -195,6 +209,10 @@ private fun RecurringPaymentScreen(
                 }
             }
             /* --- Category ----*/
+            CategorySection(
+                selectedCategory = uiState.selectedCategory,
+                onClick = onCategorySheetOpen
+            )
 
             /* ---------- Start Date ---------- */
             Column {
@@ -280,6 +298,45 @@ private fun RecurringPaymentScreen(
             }
         ) {
             DatePicker(state = datePickerState)
+        }
+    }
+
+    /* ---------- Category Sheet ---------- */
+    if (uiState.showCategorySheet) {
+        ModalBottomSheet(
+            onDismissRequest = onCategorySheetDismiss,
+            sheetState = categorySheetState
+        ) {
+            CategoryGrid(
+                categories = if (uiState.type == TransactionType.INCOME) incomeCategories.values.toList() else expenseCategories.values.toList(),
+                selectedCategory = uiState.selectedCategory,
+                onItemClick = {
+                    onCategoryChange(it)
+                    onCategorySheetDismiss()
+                }
+            )
+        }
+    }
+}
+
+@Composable
+private fun CategorySection(
+    selectedCategory: Category,
+    onClick: () -> Unit,
+) {
+    Column(
+        modifier = Modifier.clickable { onClick() }
+    ) {
+        Text(
+            text = "Category",
+            style = MaterialTheme.typography.labelLarge
+        )
+
+        Spacer(modifier = Modifier.height(6.dp))
+
+        Row (verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(imageVector = selectedCategory.icon, contentDescription = null)
+            Text(text = selectedCategory.label)
         }
     }
 }

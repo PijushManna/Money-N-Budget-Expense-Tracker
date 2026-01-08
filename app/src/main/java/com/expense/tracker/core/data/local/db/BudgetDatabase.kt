@@ -21,7 +21,7 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
         BudgetEntity::class,
         RecurringPaymentEntity::class
     ],
-    version = 2,
+    version = 1,
     exportSchema = false
 )
 @TypeConverters(Converters::class, RecurringConverters::class)

@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.expense.tracker.core.data.local.entities.RecurringFrequency
 import com.expense.tracker.core.data.local.entities.RecurringPaymentEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
+import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.repo.RecurringPaymentRepository
 import com.expense.tracker.feature.recurring.ui.RecurringPaymentState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -41,6 +42,18 @@ class RecurringPaymentViewModel @Inject constructor(
         _uiState.value = _uiState.value.copy(startDate = date)
     }
 
+    fun onCategoryChange(category: Category) {
+        _uiState.value = _uiState.value.copy(selectedCategory = category)
+    }
+
+    fun onCategorySheetOpen() {
+        _uiState.value = _uiState.value.copy(showCategorySheet = true)
+    }
+
+    fun onCategorySheetDismiss() {
+        _uiState.value = _uiState.value.copy(showCategorySheet = false)
+    }
+
     fun addRecurringPayment() {
         viewModelScope.launch {
             val state = _uiState.value
@@ -50,6 +63,7 @@ class RecurringPaymentViewModel @Inject constructor(
                         title = state.title,
                         amount = state.amount.toDouble(),
                         type = state.type,
+                        cid = state.selectedCategory.id,
                         frequency = state.frequency,
                         startDate = state.startDate
                     )

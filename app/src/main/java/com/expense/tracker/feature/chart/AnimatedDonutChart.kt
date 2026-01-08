@@ -1,13 +1,26 @@
 package com.expense.tracker.feature.chart
 
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -18,10 +31,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.expense.tracker.core.domain.models.PieSlice
+import com.expense.tracker.utils.formatAmount
 
 @Composable
 fun AnimatedDonutChart(
-    data: List<Pair<String, Int>>,
+    data: List<Pair<String, Double>>,
     modifier: Modifier = Modifier
 ) {
     // Convert input data into PieSlices with colors
@@ -35,10 +49,10 @@ fun AnimatedDonutChart(
     )
 
     val slices = data.mapIndexed { index, item ->
-        PieSlice(item.first, item.second, colors[index % colors.size])
+        PieSlice(item.first, item.second.toInt(), colors[index % colors.size])
     }
 
-    val total = slices.sumOf { it.value }
+    val total = data.sumOf { it.second }
 
     var selectedIndex by remember { mutableStateOf(-1) }
 
@@ -62,7 +76,7 @@ fun AnimatedDonutChart(
                 var startAngle = -90f
                 val gapDegrees = 2f
                 slices.forEachIndexed { index, slice ->
-                    val sweepAngle = maxOf((slice.value.toFloat() / total) * 360f * animatedProgress - gapDegrees, 0F)
+                    val sweepAngle = maxOf((slice.value.toDouble() / total) * 360.0 * animatedProgress - gapDegrees, 0.0).toFloat()
 
                     val isSelected = index == selectedIndex
                     drawArc(
@@ -79,7 +93,7 @@ fun AnimatedDonutChart(
 
             // Center text showing total
             Text(
-                text = "$total",
+                text = total.formatAmount(),
                 fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Gray,
@@ -104,7 +118,7 @@ fun AnimatedDonutChart(
                             .background(slice.color)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "${slice.label} (${slice.value})")
+                    Text(text = "${slice.label} (${data[index].second.formatAmount()})")
                 }
             }
         }
@@ -115,10 +129,10 @@ fun AnimatedDonutChart(
 @Composable
 fun AnimatedDonutChartPreview() {
     val chartData = listOf(
-        "Red" to 40,
-        "Blue" to 30,
-        "Green" to 20,
-        "Yellow" to 10
+        "Red" to 40.0,
+        "Blue" to 30.0,
+        "Green" to 20.0,
+        "Yellow" to 10.0
     )
 
     AnimatedDonutChart(data = chartData, modifier = Modifier.padding(16.dp))

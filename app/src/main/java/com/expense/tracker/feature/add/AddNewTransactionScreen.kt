@@ -113,9 +113,7 @@ private fun AddNewTransactionScreenContainer(
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(pagerState.currentPage) {
-        if (!pagerState.isScrollInProgress) {
-            onTabSelected(pagerState.currentPage)
-        }
+        onTabSelected(pagerState.currentPage)
     }
 
     Column(modifier = modifier.fillMaxSize()) {

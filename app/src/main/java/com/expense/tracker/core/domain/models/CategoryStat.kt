@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 @Keep
 data class CategoryStat(
     val title: String,
-    val value: Int,
+    val value: Double,
     val icon: ImageVector,
-    val iconBgColor: Color
+    val iconBgColor: Color = Color.LightGray
 )

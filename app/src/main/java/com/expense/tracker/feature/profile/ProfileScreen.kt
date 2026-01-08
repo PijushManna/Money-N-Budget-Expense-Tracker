@@ -17,22 +17,27 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Feedback
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.StarRate
 import androidx.compose.material.icons.filled.ThumbUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.expense.tracker.core.domain.models.AccountUi
@@ -40,7 +45,12 @@ import com.expense.tracker.feature.common.Footer
 import com.expense.tracker.navigation.Screen
 
 @Composable
-fun ProfileScreen(navController: NavController) {
+fun ProfileScreen(
+    navController: NavController,
+    viewModel: ProfileViewModel = hiltViewModel()
+) {
+    val user by viewModel.user.collectAsState()
+
     Scaffold(
         topBar = {
             Column(
@@ -69,26 +79,32 @@ fun ProfileScreen(navController: NavController) {
                     Spacer(modifier = Modifier.width(16.dp))
 
                     Column {
-                        Text(
-                            text = "Sign In",
-                            style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
-                        Text(
-                            text = "Sign in, more exciting!",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-                        )
+                        if (user != null) {
+                            Text(
+                                text = "Welcome",
+                                style = MaterialTheme.typography.titleLarge,
+                                color = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Text(
+                                text = user?.uid ?: "",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
+                            )
+                        } else {
+                            Button(onClick = { viewModel.signIn() }) {
+                                Text(text = "Sign In")
+                            }
+                        }
                     }
                 }
                 Spacer(modifier = Modifier.height(16.dp))
             }
         },
         bottomBar = {
-        Footer(currentRoute = "profile") {
-            navController.navigate(it)
-        }
-    }) {
+            Footer(currentRoute = "profile") {
+                navController.navigate(it)
+            }
+        }) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -106,15 +122,6 @@ fun ProfileScreen(navController: NavController) {
                 onAddAccountClick = { },
             )
 
-//        Spacer(modifier = Modifier.height(12.dp))
-//
-//        // Premium card
-//        ProfileItem(
-//            icon = Icons.Default.Star,
-//            title = "Premium Member",
-//            highlight = true
-//        )
-
             Spacer(modifier = Modifier.height(8.dp))
 
             ProfileItem(
@@ -128,6 +135,9 @@ fun ProfileScreen(navController: NavController) {
             )
             ProfileItem(icon = Icons.Default.Settings, title = "Settings", onClick = {})
             ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps", onClick = {})
+            if (user != null) {
+                ProfileItem(icon = Icons.Default.Logout, title = "Sign Out", onClick = { viewModel.signOut() })
+            }
         }
     }
 }

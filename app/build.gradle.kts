@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -58,6 +59,9 @@ dependencies {
     implementation(libs.androidx.compose.foundation)
     implementation(libs.androidx.compose.animation)
     implementation("androidx.compose.material3:material3-android:1.2.1")
+
+    implementation(platform("com.google.firebase:firebase-bom:33.1.0"))
+    implementation("com.google.firebase:firebase-auth")
 
     implementation(libs.androidx.room.runtime)
     implementation(libs.androidx.room.ktx)

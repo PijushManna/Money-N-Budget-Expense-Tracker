@@ -38,7 +38,7 @@ fun CategoryStats(
     stats: List<CategoryStat>,
     modifier: Modifier = Modifier
 ) {
-    val total = stats.sumOf { it.value }.toFloat()
+    val total = stats.sumOf { it.value }
 
     LazyColumn(
         modifier = modifier
@@ -47,12 +47,11 @@ fun CategoryStats(
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
         items(stats) { stat ->
-            val percentage = if (total == 0f) 0f else stat.value / total
+            val percentage = if (total == 0.0) 0 else stat.value / total
 
             CategoryStatRow(
                 title = stat.title,
-                value = stat.value,
-                percentage = percentage,
+                percentage = percentage.toFloat(),
                 icon = stat.icon,
                 iconBgColor = stat.iconBgColor
             )
@@ -63,7 +62,6 @@ fun CategoryStats(
 @Composable
 fun CategoryStatRow(
     title: String,
-    value: Int,
     percentage: Float,
     icon: ImageVector,
     iconBgColor: Color
@@ -124,12 +122,6 @@ fun CategoryStatRow(
             }
 
             Spacer(modifier = Modifier.width(12.dp))
-
-            Text(
-                text = value.toString(),
-                style = MaterialTheme.typography.bodyLarge,
-                fontWeight = FontWeight.SemiBold
-            )
         }
     }
 }
@@ -140,13 +132,13 @@ fun PreviewCategoryStats() {
     val stats = listOf(
         CategoryStat(
             title = "Sports",
-            value = 500,
+            value = 500.0,
             icon = Icons.AutoMirrored.Filled.DirectionsRun,
             iconBgColor = Color(0xFFDCC2F2)
         ),
         CategoryStat(
             title = "Shopping",
-            value = 104,
+            value = 104.0,
             icon = Icons.Default.ShoppingCart,
             iconBgColor = Color(0xFFF2D28C)
         )

@@ -1,6 +1,7 @@
 package com.expense.tracker.feature.chart
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,20 +12,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,10 +30,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.feature.common.Footer
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
-import com.expense.tracker.utils.toLocalDate
 import java.time.LocalDate
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,53 +57,34 @@ fun ChartsScreenContent(
     navController: NavController,
     onEvent: (ChartsEvent) -> Unit
 ) {
-    var showDatePicker by remember { mutableStateOf(false) }
-
-    if (showDatePicker) {
-        val datePickerState = rememberDatePickerState()
-        DatePickerDialog(
-            onDismissRequest = { showDatePicker = false },
-            confirmButton = {
-                TextButton(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        onEvent(ChartsEvent.ChangeDate(it.toLocalDate()))
-                    }
-                    showDatePicker = false
-                }) {
-                    Text(text = "OK")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDatePicker = false }) {
-                    Text(text = "Cancel")
-                }
-            }
-        ) {
-            DatePicker(state = datePickerState)
-        }
-    }
-
     Scaffold(topBar = {
-        Header(
-            config = HeaderConfig(
-                title = "Charts",
-                navigationIcon = null,
-                onNavigationClick = {}
+        Column() {
+            Header(
+                config = HeaderConfig(
+                    title = "Charts",
+                    navigationIcon = null,
+                    onNavigationClick = {},
+                    actions = {
+                        TransactionTypeSwitch(
+                            selectedType = uiState.transactionType,
+                            onTypeSelected = { onEvent(ChartsEvent.ChangeTransactionType(it)) }
+                        )
+                    }
+                )
             )
-        )
+        }
     }, bottomBar = {
         Footer(currentRoute = "charts") {
             navController.navigate(it)
         }
     }) {
-        Column(modifier = Modifier.fillMaxWidth().padding(it)) {
+        Column(modifier = Modifier
+            .fillMaxWidth()
+            .padding(it)) {
             FilterTabs(
                 selectedFilter = uiState.selectedFilter,
                 onFilterSelected = { onEvent(ChartsEvent.FilterBy(it)) }
             )
-            TextButton(onClick = { showDatePicker = true }) {
-                Text(text = "Select Date")
-            }
 
             if (uiState.categoryStats.isNotEmpty()) {
                 AnimatedDonutChart(
@@ -120,6 +96,39 @@ fun ChartsScreenContent(
             if (uiState.categoryStats.isNotEmpty()) {
                 CategoryStats(
                     stats = uiState.categoryStats
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun TransactionTypeSwitch(
+    selectedType: TransactionType,
+    onTypeSelected: (TransactionType) -> Unit
+) {
+    val types = TransactionType.entries.toTypedArray()
+    Row(
+        modifier = Modifier
+            .padding(8.dp)
+            .clip(RoundedCornerShape(8.dp))
+            .border(0.5.dp, color = Color.Gray , RoundedCornerShape(8.dp))
+        ,
+    ) {
+        types.forEach { type ->
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(if (selectedType == type) Color.DarkGray else Color.Transparent)
+                    .clickable { onTypeSelected(type) }
+                    .padding(vertical = 4.dp, horizontal = 8.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = type.name.lowercase().replaceFirstChar { it.uppercase() },
+                    color = if (selectedType == type) Color.White else Color.Black,
+                    textAlign = TextAlign.Center,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
         }
@@ -165,7 +174,8 @@ fun FilterTabs(
 fun ChartsScreenPreview() {
     val uiState = ChartsUiState(
         selectedFilter = "Monthly",
-        selectedDate = LocalDate.now()
+        selectedDate = LocalDate.now(),
+        transactionType = TransactionType.EXPENSE
     )
 
     ChartsScreenContent(

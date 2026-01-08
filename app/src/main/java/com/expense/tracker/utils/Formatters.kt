@@ -19,5 +19,5 @@ fun Double.formatAmount(
         isGroupingUsed = true
     }
 
-    return "${if (this < 0) "-" else ""} $currencySymbol${formatter.format(abs(this))}"
+    return "${if (this < 0) "-" else ""}$currencySymbol${formatter.format(abs(this))}"
 }

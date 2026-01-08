@@ -1,14 +1,16 @@
 package com.expense.tracker.feature.chart
 
-import androidx.compose.ui.graphics.Color
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.domain.models.CategoryStat
 import com.expense.tracker.core.domain.models.expenseCategories
+import com.expense.tracker.core.domain.models.incomeCategories
 import com.expense.tracker.feature.chart.use_case.GetTransactionsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +26,7 @@ import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class)
 @HiltViewModel
 class ChartsViewModel @Inject constructor(
     private val getTransactionsUseCase: GetTransactionsUseCase
@@ -35,10 +38,11 @@ class ChartsViewModel @Inject constructor(
     init {
         combine(
             uiState.map { it.selectedFilter }.distinctUntilChanged(),
-            uiState.map { it.selectedDate }.distinctUntilChanged()
-        ) { filter, date ->
-            filter to date
-        }.flatMapLatest { (filter, date) ->
+            uiState.map { it.selectedDate }.distinctUntilChanged(),
+            uiState.map { it.transactionType }.distinctUntilChanged()
+        ) { filter, date, type ->
+            Triple(filter, date, type)
+        }.flatMapLatest { (filter, date, type) ->
             val (startDate, endDate) = when (filter) {
                 "Weekly" -> {
                     val startOfWeek = date.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
@@ -59,15 +63,19 @@ class ChartsViewModel @Inject constructor(
             }
             getTransactionsUseCase(startDate, endDate)
         }.onEach { transactions ->
-            val expenseTransactions = transactions.filter { it.type == TransactionType.EXPENSE }
-            val categoryStats = expenseTransactions.groupBy { it.categoryId }
+            val filteredTransactions = transactions.filter { it.type == uiState.value.transactionType }
+            val currency = transactions.first().currency
+            val categoryStats = filteredTransactions.groupBy { it.categoryId }
                 .map { (categoryId, transactions) ->
-                    val category = expenseCategories[categoryId]
+                    val category = if(transactions.first().type == TransactionType.INCOME)
+                        incomeCategories[categoryId]
+                    else
+                        expenseCategories[categoryId]
+
                     CategoryStat(
                         title = category?.label ?: "Unknown",
-                        value = transactions.sumOf { it.amount }.toInt(),
-                        icon = category?.icon,
-                        iconBgColor = Color.White
+                        value = transactions.sumOf { it.amount },
+                        icon = category?.icon ?: Icons.Default.Report,
                     )
                 }
             _uiState.update { it.copy(categoryStats = categoryStats) }
@@ -82,6 +90,9 @@ class ChartsViewModel @Inject constructor(
             is ChartsEvent.ChangeDate -> {
                 _uiState.update { it.copy(selectedDate = event.date) }
             }
+            is ChartsEvent.ChangeTransactionType -> {
+                _uiState.update { it.copy(transactionType = event.type) }
+            }
         }
     }
 }
@@ -91,10 +102,12 @@ data class ChartsUiState(
     val isLoading: Boolean = false,
     val error: String? = null,
     val selectedFilter: String = "Weekly",
-    val selectedDate: LocalDate = LocalDate.now()
+    val selectedDate: LocalDate = LocalDate.now(),
+    val transactionType: TransactionType = TransactionType.EXPENSE
 )
 
 sealed class ChartsEvent {
     data class FilterBy(val filter: String) : ChartsEvent()
     data class ChangeDate(val date: LocalDate) : ChartsEvent()
+    data class ChangeTransactionType(val type: TransactionType) : ChartsEvent()
 }

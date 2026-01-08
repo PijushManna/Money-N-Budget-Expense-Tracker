@@ -37,6 +37,10 @@ class TransactionRepositoryImpl(
         return transactionDao.getTransactionsBetween(startDate.toLong(), endDate.toLong())
     }
 
+    override fun getTransactionsByType(type: TransactionType): Flow<List<TransactionEntity>> {
+        return transactionDao.getTransactionsByType(type)
+    }
+
     override fun getTotalIncome(): Flow<Double> {
         return transactionDao.getTotalAmount(TransactionType.INCOME)
             .map { it ?: 0.0 }

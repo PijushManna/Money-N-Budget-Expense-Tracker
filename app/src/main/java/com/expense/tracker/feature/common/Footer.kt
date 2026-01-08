@@ -6,13 +6,13 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.CandlestickChart
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.PieChart
 import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.material.icons.outlined.CandlestickChart
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.PieChart
 import androidx.compose.material.icons.outlined.Receipt
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
@@ -75,7 +75,7 @@ sealed class BottomNavigationRoute(
 ) {
     object Home : BottomNavigationRoute("home", Icons.Outlined.Home, Icons.Filled.Home, "Home")
     object Charts :
-        BottomNavigationRoute("charts", Icons.Outlined.CandlestickChart, Icons.Filled.CandlestickChart, "Charts")
+        BottomNavigationRoute("charts", Icons.Outlined.PieChart, Icons.Filled.PieChart, "Charts")
 
     object Reports :
         BottomNavigationRoute("reports", Icons.Outlined.Receipt, Icons.Filled.Receipt, "Reports")

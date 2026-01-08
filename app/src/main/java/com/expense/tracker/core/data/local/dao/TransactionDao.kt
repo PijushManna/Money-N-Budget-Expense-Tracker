@@ -27,6 +27,9 @@ interface TransactionDao {
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC LIMIT 1")
     fun getFirstTransaction(): Flow<TransactionEntity?>
 
+    @Query("SELECT * FROM transactions WHERE type = :type ORDER BY timestamp DESC")
+    fun getTransactionsByType(type: TransactionType): Flow<List<TransactionEntity>>
+
     @Query("""
         SELECT * FROM transactions 
         WHERE type = :type 

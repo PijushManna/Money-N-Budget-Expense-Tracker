@@ -9,12 +9,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Locale
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -27,40 +22,40 @@ class DetailsViewModel @Inject constructor(
     private val _state = MutableStateFlow(DetailsState())
     val state = _state.asStateFlow()
 
-    init {
-        savedStateHandle.get<Long>("id")?.let { transactionId ->
-            if (transactionId != -1L) {
-                viewModelScope.launch {
-                    transactionRepository.getTransactionById(transactionId)
-                        .flatMapLatest { transaction ->
-                            if (transaction == null) {
-                                return@flatMapLatest kotlinx.coroutines.flow.flowOf(null to null)
-                            }
-                            categoryRepository.getCategoryById(transaction.categoryId)
-                                .map { category ->
-                                    transaction to category
-                                }
-                        }.collectLatest { (transaction, category) ->
-                            if (transaction != null && category != null) {
-                                _state.value = DetailsState(
-                                    id = transaction.id,
-                                    title = transaction.title,
-                                    amount = "%.2f".format(transaction.amount),
-                                    type = transaction.type,
-                                    category = category.name,
-                                    date = SimpleDateFormat(
-                                        "dd MMM yyyy, hh:mm a",
-                                        Locale.getDefault()
-                                    ).format(transaction.timestamp),
-                                    note = transaction.note ?: "",
-                                    currency = transaction.currency
-                                )
-                            }
-                        }
-                }
-            }
-        }
-    }
+//    init {
+//        savedStateHandle.get<Long>("id")?.let { transactionId ->
+//            if (transactionId != -1L) {
+//                viewModelScope.launch {
+//                    transactionRepository.getTransactionById(transactionId)
+//                        .flatMapLatest { transaction ->
+//                            if (transaction == null) {
+//                                return@flatMapLatest flowOf(null to null)
+//                            }
+//                            categoryRepository.getCategoryById(transaction.categoryId)
+//                                .map { category ->
+//                                    transaction to category
+//                                }
+//                        }.collectLatest { (transaction, category) ->
+//                            if (transaction != null && category != null) {
+//                                _state.value = DetailsState(
+//                                    id = transaction.id,
+//                                    title = transaction.title,
+//                                    amount = "%.2f".format(transaction.amount),
+//                                    type = transaction.type,
+//                                    category = category.name,
+//                                    date = SimpleDateFormat(
+//                                        "dd MMM yyyy, hh:mm a",
+//                                        Locale.getDefault()
+//                                    ).format(transaction.timestamp),
+//                                    note = transaction.note ?: "",
+//                                    currency = transaction.currency
+//                                )
+//                            }
+//                        }
+//                }
+//            }
+//        }
+//    }
 
     fun deleteTransaction() {
         viewModelScope.launch {

@@ -4,7 +4,6 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.domain.models.CategorySpend
 import kotlinx.coroutines.flow.Flow
-import java.time.LocalDate
 
 interface TransactionRepository {
     suspend fun addTransaction(transaction: TransactionEntity)
@@ -15,7 +14,7 @@ interface TransactionRepository {
     fun getTotalIncome(): Flow<Double>
     fun getTotalExpense(): Flow<Double>
     fun getTransactionById(id: Long): Flow<TransactionEntity?>
-    fun getTransactionsBetween(startDate: LocalDate, endDate: LocalDate): Flow<List<TransactionEntity>>
+    fun getTransactionsBetween(startDate: Long, endDate: Long): Flow<List<TransactionEntity>>
     fun getTransactionsByType(type: TransactionType): Flow<List<TransactionEntity>>
     fun getCategoryWiseExpense(month: String): Flow<List<CategorySpend>>
 }

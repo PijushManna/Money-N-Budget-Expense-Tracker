@@ -57,8 +57,7 @@ class AddNewTransactionViewModel @Inject constructor(
                             uiState = uiState.copy(
                                 id = transaction.id,
                                 selectedTabIndex = if (transaction.type == TransactionType.INCOME) 0 else 1,
-                                selectedCategory = incomeCategories[transaction.categoryId]
-                                    ?: expenseCategories[transaction.categoryId] ?: Category(),
+                                selectedCategory = Category(),
                                 amount = transaction.amount.formatAmount(transaction.currency),
                                 note = transaction.note ?: "",
                                 currency = transaction.currency,
@@ -121,13 +120,13 @@ class AddNewTransactionViewModel @Inject constructor(
     private fun saveTransaction() {
         viewModelScope.launch {
             var transaction = TransactionEntity(
-                title = uiState.selectedCategory.label,
+                title = "",
+                categoryName = uiState.selectedCategory.label,
                 amount = uiState.amount.toDouble(),
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
-                categoryId = uiState.selectedCategory.id,
                 note = uiState.note,
                 currency = uiState.currency,
-                accountId = uiState.selectedAccount?.id ?: 0L
+                accountId = uiState.selectedAccount?.id ?: 0L,
             )
             if (uiState.id != -1L) transaction = transaction.copy(id = uiState.id)
             transactionRepository.addTransaction(transaction)

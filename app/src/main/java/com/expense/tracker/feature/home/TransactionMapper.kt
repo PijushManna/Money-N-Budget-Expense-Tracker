@@ -1,12 +1,8 @@
 package com.expense.tracker.feature.home
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Receipt
-import androidx.compose.ui.graphics.vector.ImageVector
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
-import com.expense.tracker.core.domain.models.expenseCategories
-import com.expense.tracker.core.domain.models.incomeCategories
+import com.expense.tracker.core.data.mapper.CategoryIconMapper
 import com.expense.tracker.utils.formatAmount
 import com.expense.tracker.utils.toLocalDate
 import com.expense.tracker.utils.toUiDate
@@ -15,8 +11,8 @@ fun TransactionEntity.toTransactionViewType(): TransactionsViewType.Transaction 
     val isIncome = type == TransactionType.INCOME
 
     return TransactionsViewType.Transaction(
-        icon = categoryIconMapper(categoryId, type),
-        label = categoryLabelMapper(categoryId, type),
+        icon = CategoryIconMapper.getCategoryIconFromName(categoryName),
+        label = categoryName,
         amount = "${if (isIncome) "+" else "-"} ${amount.formatAmount(currency)}",
         id = id
     )
@@ -56,19 +52,3 @@ object TransactionsUiMapper {
     }
 }
 
-fun categoryIconMapper(
-    categoryId: Long,
-    type: TransactionType
-): ImageVector {
-    return when(type){
-        TransactionType.INCOME -> incomeCategories[categoryId]?.icon ?: Icons.Default.Receipt
-        TransactionType.EXPENSE -> expenseCategories[categoryId]?.icon ?: Icons.Default.Receipt
-    }
-}
-
-fun categoryLabelMapper(categoryId: Long, type: TransactionType): String {
-    return when(type){
-        TransactionType.INCOME -> incomeCategories[categoryId]?.label ?: "Unknown"
-        TransactionType.EXPENSE -> expenseCategories[categoryId]?.label ?: "Unknown"
-    }
-}

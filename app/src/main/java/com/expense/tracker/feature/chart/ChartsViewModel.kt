@@ -5,10 +5,10 @@ import androidx.compose.material.icons.filled.Report
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.expense.tracker.core.data.local.entities.TransactionType
+import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.models.CategoryStat
-import com.expense.tracker.core.domain.models.expenseCategories
-import com.expense.tracker.core.domain.models.incomeCategories
 import com.expense.tracker.feature.chart.use_case.GetTransactionsUseCase
+import com.expense.tracker.utils.toLong
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -61,16 +61,16 @@ class ChartsViewModel @Inject constructor(
                 }
                 else -> date to date
             }
-            getTransactionsUseCase(startDate, endDate)
+            getTransactionsUseCase(startDate.toLong(), endDate.toLong())
         }.onEach { transactions ->
             val filteredTransactions = transactions.filter { it.type == uiState.value.transactionType }
             val currency = transactions.first().currency
-            val categoryStats = filteredTransactions.groupBy { it.categoryId }
+            val categoryStats = filteredTransactions.groupBy { it.categoryName }
                 .map { (categoryId, transactions) ->
                     val category = if(transactions.first().type == TransactionType.INCOME)
-                        incomeCategories[categoryId]
+                        Category()
                     else
-                        expenseCategories[categoryId]
+                        Category()
 
                     CategoryStat(
                         title = category?.label ?: "Unknown",

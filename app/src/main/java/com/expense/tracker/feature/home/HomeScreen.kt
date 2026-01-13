@@ -80,7 +80,7 @@ fun HomeScreen(
                 showRPDialog = true
                 rpId = it.id
             }
-            TransactionDetails(transactions , navController)
+            TransactionDetails(TransactionsUiMapper.map(transactions), navController)
         }
     }
 

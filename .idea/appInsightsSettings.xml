@@ -23,9 +23,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.expense.tracker" />
-                  <option name="mobileSdkAppId" value="1:413309091706:android:805819c5000c9d9fb6a0c3" />
-                  <option name="projectId" value="expense-tracker-d2e76" />
-                  <option name="projectNumber" value="413309091706" />
+                  <option name="mobileSdkAppId" value="1:218472678932:android:dba78ca5e3049bd16c8901" />
+                  <option name="projectId" value="money-tracker-43264" />
+                  <option name="projectNumber" value="218472678932" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

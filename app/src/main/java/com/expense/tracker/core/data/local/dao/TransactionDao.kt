@@ -52,12 +52,12 @@ interface TransactionDao {
     fun getTransactionById(id: Long): Flow<TransactionEntity?>
 
     @Query("""
-    SELECT categoryId as categoryId, 
+    SELECT categoryName as categoryName, 
            SUM(amount) as spent
     FROM transactions
     WHERE type = 'EXPENSE'
       AND strftime('%Y-%m', timestamp / 1000, 'unixepoch') = :month
-    GROUP BY categoryId
+    GROUP BY categoryName
 """)
     fun getCategoryWiseExpense(month: String): Flow<List<CategorySpend>>
 

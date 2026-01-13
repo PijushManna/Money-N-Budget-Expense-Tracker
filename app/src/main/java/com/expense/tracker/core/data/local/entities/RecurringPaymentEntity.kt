@@ -11,7 +11,7 @@ data class RecurringPaymentEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0L,
     val title: String,
     val amount: Double,
-    val type: TransactionType, // INCOME / EXPENSE
+    val type: TransactionType,
     val cid: Long = 106,
     val frequency: RecurringFrequency,
     val startDate: Long, // millis

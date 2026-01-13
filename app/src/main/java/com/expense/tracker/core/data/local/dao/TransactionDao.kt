@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
+import com.expense.tracker.core.domain.models.CategorySpend
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -49,4 +50,15 @@ interface TransactionDao {
 
     @Query("SELECT * FROM transactions WHERE id = :id")
     fun getTransactionById(id: Long): Flow<TransactionEntity?>
+
+    @Query("""
+    SELECT categoryId as categoryId, 
+           SUM(amount) as spent
+    FROM transactions
+    WHERE type = 'EXPENSE'
+      AND strftime('%Y-%m', timestamp / 1000, 'unixepoch') = :month
+    GROUP BY categoryId
+""")
+    fun getCategoryWiseExpense(month: String): Flow<List<CategorySpend>>
+
 }

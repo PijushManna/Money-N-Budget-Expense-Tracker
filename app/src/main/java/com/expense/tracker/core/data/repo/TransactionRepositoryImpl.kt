@@ -55,4 +55,7 @@ class TransactionRepositoryImpl @Inject constructor(
     override fun getTransactionById(id: Long): Flow<TransactionEntity?> {
         return transactionDao.getTransactionById(id)
     }
+
+    override fun getCategoryWiseExpense(month: String) =
+        transactionDao.getCategoryWiseExpense(month)
 }

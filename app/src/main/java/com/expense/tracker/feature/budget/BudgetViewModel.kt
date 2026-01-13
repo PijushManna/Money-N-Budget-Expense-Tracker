@@ -1,42 +1,51 @@
 package com.expense.tracker.feature.budget
 
+import android.os.Build
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.expense.tracker.core.data.local.entities.TransactionEntity
-import com.expense.tracker.core.data.local.entities.TransactionType
+import com.expense.tracker.core.data.local.entities.BudgetEntity
+import com.expense.tracker.core.domain.repo.BudgetRepository
 import com.expense.tracker.core.domain.repo.CategoryRepository
 import com.expense.tracker.core.domain.repo.TransactionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
+import java.time.YearMonth
 
 class BudgetViewModel(
-    private val transactionRepository: TransactionRepository,
-    private val categoryRepository: CategoryRepository
+    private val budgetRepository: BudgetRepository,
+    private val categoryRepository: CategoryRepository,
+    private val transactionRepository: TransactionRepository
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(BudgetUiState())
-    val uiState: StateFlow<BudgetUiState> = _uiState.asStateFlow()
+    val uiState = _uiState.asStateFlow()
 
-    init {
-        observeData()
+    private val currentMonth = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+        YearMonth.now().toString()
+    } else {
+        TODO("VERSION.SDK_INT < O")
     }
 
-    private fun observeData() {
+    init {
+        observeBudgets()
+    }
+
+    private fun observeBudgets() {
         viewModelScope.launch {
             combine(
-                transactionRepository.getAllTransactions(),
+                budgetRepository.getBudgetsForMonth(currentMonth),
                 categoryRepository.getAllCategories(),
-                transactionRepository.getTotalIncome(),
-                transactionRepository.getTotalExpense()
-            ) { transactions, categories, income, expense ->
+                transactionRepository.getCategoryWiseExpense(currentMonth)
+            ) { budgets, categories, spends ->
+
+                val spendMap = spends.associateBy { it.categoryId }
+
                 BudgetUiState(
-                    transactions = transactions,
+                    categoryBudgets = budgets,
                     categories = categories,
-                    totalIncome = income,
-                    totalExpense = expense
+                    categorySpends = spendMap
                 )
             }.collect {
                 _uiState.value = it
@@ -44,29 +53,16 @@ class BudgetViewModel(
         }
     }
 
-    fun addTransaction(
-        title: String,
-        amount: Double,
-        type: TransactionType,
-        categoryId: Long,
-        note: String?
-    ) {
+
+    fun setCategoryBudget(categoryId: Long, amount: Double) {
         viewModelScope.launch {
-            transactionRepository.addTransaction(
-                TransactionEntity(
-                    title = title,
-                    amount = amount,
-                    type = type,
+            budgetRepository.setBudget(
+                BudgetEntity(
                     categoryId = categoryId,
-                    note = note
+                    limitAmount = amount,
+                    month = currentMonth
                 )
             )
-        }
-    }
-
-    fun deleteTransaction(transaction: TransactionEntity) {
-        viewModelScope.launch {
-            transactionRepository.deleteTransaction(transaction)
         }
     }
 }

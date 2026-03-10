@@ -11,6 +11,5 @@ data class BudgetEntity(
     val categoryId: Long,
     val limitAmount: Double,
 
-    // yyyy-MM format → "2026-01"
     val month: String
 )

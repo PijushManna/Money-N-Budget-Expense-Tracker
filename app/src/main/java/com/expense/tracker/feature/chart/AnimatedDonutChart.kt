@@ -38,6 +38,9 @@ fun AnimatedDonutChart(
     data: List<Pair<String, Double>>,
     modifier: Modifier = Modifier
 ) {
+    val chartData = data.filter { it.second > 0.0 }
+    if (chartData.isEmpty()) return
+
     // Convert input data into PieSlices with colors
     val colors = listOf(
         Color(0xFFEF5350),
@@ -48,11 +51,11 @@ fun AnimatedDonutChart(
         Color(0xFFFF7043)
     )
 
-    val slices = data.mapIndexed { index, item ->
-        PieSlice(item.first, item.second.toInt(), colors[index % colors.size])
+    val slices = chartData.mapIndexed { index, item ->
+        PieSlice(item.first, item.second.toInt().coerceAtLeast(1), colors[index % colors.size])
     }
 
-    val total = data.sumOf { it.second }
+    val total = chartData.sumOf { it.second }
 
     var selectedIndex by remember { mutableStateOf(-1) }
 
@@ -76,7 +79,7 @@ fun AnimatedDonutChart(
                 var startAngle = -90f
                 val gapDegrees = 2f
                 slices.forEachIndexed { index, slice ->
-                    val sweepAngle = maxOf((slice.value.toDouble() / total) * 360.0 * animatedProgress - gapDegrees, 0.0).toFloat()
+                    val sweepAngle = maxOf((chartData[index].second / total) * 360.0 * animatedProgress - gapDegrees, 0.0).toFloat()
 
                     val isSelected = index == selectedIndex
                     drawArc(
@@ -118,7 +121,7 @@ fun AnimatedDonutChart(
                             .background(slice.color)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = "${slice.label} (${data[index].second.formatAmount()})")
+                    Text(text = "${slice.label} (${chartData[index].second.formatAmount()})")
                 }
             }
         }

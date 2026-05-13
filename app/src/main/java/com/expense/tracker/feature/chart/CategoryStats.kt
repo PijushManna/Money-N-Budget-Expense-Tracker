@@ -11,8 +11,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -32,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.expense.tracker.core.domain.models.CategoryStat
+import com.expense.tracker.utils.formatAmount
 
 @Composable
 fun CategoryStats(
@@ -40,17 +39,18 @@ fun CategoryStats(
 ) {
     val total = stats.sumOf { it.value }
 
-    LazyColumn(
+    Column(
         modifier = modifier
             .fillMaxWidth()
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        items(stats) { stat ->
+        stats.forEach { stat ->
             val percentage = if (total == 0.0) 0 else stat.value / total
 
             CategoryStatRow(
                 title = stat.title,
+                amount = stat.value,
                 percentage = percentage.toFloat(),
                 icon = stat.icon,
                 iconBgColor = stat.iconBgColor
@@ -62,6 +62,7 @@ fun CategoryStats(
 @Composable
 fun CategoryStatRow(
     title: String,
+    amount: Double,
     percentage: Float,
     icon: ImageVector,
     iconBgColor: Color
@@ -100,7 +101,7 @@ fun CategoryStatRow(
                         fontWeight = FontWeight.Medium
                     )
                     Text(
-                        text = String.format("%.2f%%", percentage * 100),
+                        text = "${amount.formatAmount()}  ${String.format("%.1f%%", percentage * 100)}",
                         style = MaterialTheme.typography.bodyMedium,
                         color = Color.Gray
                     )

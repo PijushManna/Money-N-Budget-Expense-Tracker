@@ -24,13 +24,13 @@ class GetTransactionsViewTypeUseCase @Inject constructor() {
 
                 val totalExpense = items.filter { it.transaction.type == TransactionType.EXPENSE }
                     .groupBy { it.account.currencyCode }.mapValues { (_, list) ->
-                        "-" + list.sumOf { it.transaction.amount }
+                        list.sumOf { it.transaction.amount }
                             .formatAmount(list.first().currency.symbol)
                     }.values.joinToString(" + ")
 
 
                 val header = TransactionsViewType.Header(
-                    date = date.toUiDate(), total = "Expenses: $totalExpense \nIncome: $totalIncome "
+                    date = date.toUiDate(), expense = totalExpense, income = totalIncome
                 )
 
                 val rows = items.map {

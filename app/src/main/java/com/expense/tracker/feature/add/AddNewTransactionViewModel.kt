@@ -16,6 +16,7 @@ import com.expense.tracker.core.domain.repo.TransactionRepository
 import com.expense.tracker.core.domain.usecase.AddTransactionUseCase
 import com.expense.tracker.core.domain.usecase.GetAllAccountsUseCase
 import com.expense.tracker.utils.formatAmount
+import com.expense.tracker.utils.toFormattedDouble
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
@@ -167,7 +168,7 @@ class AddNewTransactionViewModel @Inject constructor(
             var transaction = TransactionEntity(
                 title = title,
                 categoryName = uiState.selectedCategory.label,
-                amount = uiState.amount.toDouble(),
+                amount = uiState.amount.toFormattedDouble(),
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
                 note = uiState.note,
                 accountId = selectedAccountId,
@@ -188,11 +189,12 @@ class AddNewTransactionViewModel @Inject constructor(
     }
 
     private fun handleInput(current: String, key: String): String {
-        return when (key) {
+        val amt =  when (key) {
             "⌫" -> if (current.length > 1) current.dropLast(1) else "0"
             "+", "-", "Today" -> current
             else -> if (current == "0") key else (current + key)
         }
+        return amt.toFormattedDouble().formatAmount()
     }
 
     private fun Long.toLocalStartOfDayMillis(): Long {

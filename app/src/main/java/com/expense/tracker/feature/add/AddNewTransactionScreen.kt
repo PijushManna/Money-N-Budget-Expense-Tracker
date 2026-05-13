@@ -147,7 +147,6 @@ private fun AddNewTransactionScreenContainer(
         Box(
             Modifier
                 .fillMaxWidth()
-                .background(MaterialTheme.colorScheme.primaryContainer)
                 .padding(16.dp), contentAlignment = Alignment.Center
         ) {
             TransactionTabs(
@@ -297,7 +296,6 @@ fun TransactionTabs(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .clip(RoundedCornerShape(12.dp))
-            .background(Color.Transparent)
             .border(1.dp, Color.Black, RoundedCornerShape(12.dp))
     ) {
         tabs.forEachIndexed { index, title ->
@@ -315,7 +313,7 @@ fun TransactionTabs(
                 contentAlignment = Alignment.Center) {
                 Text(
                     text = title,
-                    color = if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Black
+                    color = if (selected) Color.White else Color.Black
                 )
             }
         }
@@ -417,7 +415,7 @@ fun AmountHeader(
         )
 
         Text(
-            text = amount, fontSize = 36.sp, fontWeight = FontWeight.Medium
+            text = amount, fontSize = 28.sp, fontWeight = FontWeight.Medium
         )
     }
 }

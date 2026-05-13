@@ -21,3 +21,10 @@ fun Double.formatAmount(
 
     return "${if (this < 0) "-" else ""}$currencySymbol${formatter.format(abs(this))}"
 }
+
+fun String.toFormattedDouble(): Double {
+    return this
+        .replace(",", "") // remove grouping separators
+        .replace(Regex("[^\\d.-]"), "") // remove currency symbols and other chars
+        .toDoubleOrNull() ?: 0.0
+}

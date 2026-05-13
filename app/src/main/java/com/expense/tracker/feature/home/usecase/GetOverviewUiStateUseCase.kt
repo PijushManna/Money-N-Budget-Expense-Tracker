@@ -26,7 +26,7 @@ class GetOverviewUiStateUseCase @Inject constructor() {
                     .sumOf { it.transaction.amount * it.currency.conversionFactor }
                     .formatAmount(baseCurrency.symbol),
                 totalExpense = transactions.filter { it.transaction.type == TransactionType.EXPENSE }
-                    .sumOf { it.transaction.amount * it.currency.conversionFactor * -1 }
+                    .sumOf { it.transaction.amount * it.currency.conversionFactor }
                     .formatAmount(baseCurrency.symbol),
                 totalBalance = accounts.sumOf { it.account.balance * it.currency.conversionFactor }
                     .formatAmount(baseCurrency.symbol),

@@ -80,7 +80,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            Overview(Modifier, uiState = overview, filterStr = selectedFilter.toString()){
+            Overview(Modifier, uiState = overview){
                 showDateFilterDialog = true
             }
             PendingTransactions(pendingTransactions){
@@ -110,11 +110,6 @@ fun HomeScreen(
                 viewModel.verifyRecurringPayment(rpId!!, false)
                 showRPDialog = false
             }
-        },
-
-        neutralText = "Later",
-        onNeutral = {
-            showRPDialog = false
         },
 
         onDismiss = { showRPDialog = false }
@@ -173,9 +168,8 @@ fun HomeScreenContainer(
 }
 
 @Composable
-fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState,filterStr:String, onClick: () -> Unit = {}) {
-    Column(modifier = modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
-        HorizontalDivider(thickness = 0.5.dp)
+fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState, onClick: () -> Unit = {}) {
+    Column(modifier = modifier) {
         Row(modifier = Modifier.fillMaxWidth()) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -209,7 +203,8 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState,filterStr:S
                         Text(
                             uiState.totalExpense,
                             modifier = Modifier.padding(top = 4.dp),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            color= MaterialTheme.colorScheme.error
                         )
                     }
                 }
@@ -222,7 +217,8 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState,filterStr:S
                         Text(
                             uiState.totalIncome,
                             modifier = Modifier.padding(top = 4.dp),
-                            style = MaterialTheme.typography.titleMedium
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.primary
                         )
                     }
                 }

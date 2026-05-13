@@ -4,6 +4,7 @@ import com.expense.tracker.core.data.local.entities.AccountWithCurrency
 import com.expense.tracker.core.data.local.entities.CurrencyEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.data.local.entities.TransactionWithAccount
+import com.expense.tracker.feature.home.states.DateRangeResult
 import com.expense.tracker.feature.home.states.OverviewUiState
 import com.expense.tracker.utils.formatAmount
 import kotlinx.coroutines.flow.Flow
@@ -14,29 +15,13 @@ class GetOverviewUiStateUseCase @Inject constructor() {
     operator fun invoke(
         transactions: Flow<List<TransactionWithAccount>>,
         accounts: Flow<List<AccountWithCurrency>>,
-        year: Int,
-        month: Int,
+        selectedRange: Flow<DateRangeResult>,
         baseCurrency: CurrencyEntity
     ): Flow<OverviewUiState> {
-        val months = listOf(
-            "January",
-            "February",
-            "March",
-            "April",
-            "May",
-            "June",
-            "July",
-            "August",
-            "September",
-            "October",
-            "November",
-            "December"
-        )
-
-        return combine(transactions, accounts) { transactions, accounts ->
+        return combine(transactions, accounts, selectedRange) { transactions, accounts, range ->
             OverviewUiState(
-                selectedYear = year.toString(),
-                selectedMonth = months[month],
+                selectedYear = range.label,
+                selectedMonth = range.label,
                 totalIncome = transactions.filter { it.transaction.type == TransactionType.INCOME }
                     .sumOf { it.transaction.amount * it.currency.conversionFactor }
                     .formatAmount(baseCurrency.symbol),

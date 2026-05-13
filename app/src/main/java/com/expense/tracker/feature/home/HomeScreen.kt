@@ -57,6 +57,7 @@ fun HomeScreen(
     val overview by remember { derivedStateOf { overviewUiState } }
     val transactions by viewModel.transactionsUiState.collectAsState()
     val pendingTransactions by viewModel.pendingTransactions.collectAsState()
+    val selectedFilter by viewModel.filterStr.collectAsState()
     var rpId by remember { mutableStateOf<Long?>(null) }
     var showRPDialog by remember { mutableStateOf(false) }
     var showDateFilterDialog by remember { mutableStateOf(false) }
@@ -79,7 +80,7 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            Overview(Modifier, uiState = overview, filterStr = viewModel.filterStr.toString()){
+            Overview(Modifier, uiState = overview, filterStr = selectedFilter.toString()){
                 showDateFilterDialog = true
             }
             PendingTransactions(pendingTransactions){
@@ -121,10 +122,10 @@ fun HomeScreen(
 
     AnimatedVisibility(showDateFilterDialog) {
         DateFilterDialog(
-            selectedFilter = viewModel.filterStr,
+            selectedFilter = selectedFilter,
             onDismiss = { showDateFilterDialog = false },
             onApply = {
-                viewModel.filterStr = it
+                viewModel.onDateFilterSelected(it)
                 showDateFilterDialog = false
             }
         )
@@ -180,9 +181,9 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState,filterStr:S
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.padding(8.dp)
             ) {
-                Text(uiState.selectedYear, style = MaterialTheme.typography.bodyMedium)
+                Text("Date", style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    filterStr,
+                    uiState.selectedYear,
                     style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))

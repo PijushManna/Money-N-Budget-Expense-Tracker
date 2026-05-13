@@ -1,9 +1,5 @@
 package com.expense.tracker.feature.home
 
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.expense.tracker.core.data.local.db.BudgetDatabase
@@ -16,20 +12,26 @@ import com.expense.tracker.core.domain.repo.TransactionRepository
 import com.expense.tracker.feature.home.states.DateFilter
 import com.expense.tracker.feature.home.states.OverviewUiState
 import com.expense.tracker.feature.home.states.PendingRecurringTransaction
+import com.expense.tracker.feature.home.states.getDateRange
 import com.expense.tracker.feature.home.usecase.GetOverviewUiStateUseCase
 import com.expense.tracker.feature.home.usecase.GetTransactionsViewTypeUseCase
 import com.expense.tracker.utils.formatAmount
-import com.expense.tracker.utils.getMonthRange
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
+@OptIn(ExperimentalCoroutinesApi::class)
 class HomeViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
     private val recurringPaymentRepository: RecurringPaymentRepository,
@@ -40,35 +42,51 @@ class HomeViewModel @Inject constructor(
 ) : ViewModel() {
 
 
-    var filterStr by mutableStateOf<DateFilter>(DateFilter.Last3Months)
+    private val _filterStr = MutableStateFlow<DateFilter>(DateFilter.Last3Months)
+    val filterStr = _filterStr.asStateFlow()
 
     init {
-        CoroutineScope(Dispatchers.IO).launch {
+        viewModelScope.launch(Dispatchers.IO) {
             if (db.accountDao().count() == 0) DummyDataSeeder(
                 db.currencyDao(), db.accountDao(), db.transactionDao()
             ).seed()
-
-            Log.d(
-                "HomeViewModel", db.accountDao().getAllAccounts().toString()
-            )
-
         }
 
     }
 
-    val year = 2026
-    val month = 4
-    val ran = getMonthRange(year, month)
-    val transactions = transactionRepository.getTransactionsBetween(ran.first, ran.second)
+    private val selectedRange = _filterStr
+        .map(::getDateRange)
+        .distinctUntilChanged()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            getDateRange(DateFilter.Last3Months)
+        )
+
+    private val transactions = selectedRange
+        .flatMapLatest { range ->
+            transactionRepository.getTransactionsBetween(range.start, range.end)
+        }
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            emptyList()
+        )
+
     val accounts = accountRepository.getAllAccounts()
     val baseCurrency = CurrencyEntity("INR", "₹", 1.0)
 
-    val overviewUiState = getOverviewUiStateUseCase(transactions, accounts, year, month, baseCurrency).stateIn(
+    val overviewUiState =
+        getOverviewUiStateUseCase(transactions, accounts, selectedRange, baseCurrency).stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5000L),
+            OverviewUiState()
+        )
+    val transactionsUiState = getTransactionsViewTypeUseCase(transactions).stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000L),
-        OverviewUiState()
+        emptyList()
     )
-    val transactionsUiState = getTransactionsViewTypeUseCase(transactions).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
     val pendingTransactions = recurringPaymentRepository.getActiveRecurringPayments().map {
         it.map {
             PendingRecurringTransaction(
@@ -82,6 +100,9 @@ class HomeViewModel @Inject constructor(
         }
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000L), emptyList())
 
+    fun onDateFilterSelected(filter: DateFilter) {
+        _filterStr.update { filter }
+    }
 
     fun verifyRecurringPayment(
         rpId: Long, accept: Boolean

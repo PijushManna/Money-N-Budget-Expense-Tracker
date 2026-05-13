@@ -32,6 +32,7 @@ data class AddNewTransactionUiState(
     val categories: List<Category> = expenseCategories.values.toList(),
     val selectedCategory: Category = Category(),
     val amount: String = "0",
+    val title: String = "",
     val note: String = "",
     val selectedDateMillis: Long = System.currentTimeMillis(),
     val accounts: List<AccountWithCurrency> = emptyList(),
@@ -77,6 +78,7 @@ class AddNewTransactionViewModel @Inject constructor(
                             selectedTabIndex = if (transaction.type == TransactionType.INCOME) 0 else 1,
                             selectedCategory = Category(),
                             amount = transaction.amount.formatAmount(),
+                            title = transaction.title.ifBlank { transaction.defaultTitle() },
                             note = transaction.note ?: "",
                             selectedDateMillis = transaction.timestamp,
                             showNumpad = true,
@@ -99,14 +101,16 @@ class AddNewTransactionViewModel @Inject constructor(
             categories = newCategories,
             selectedCategory = Category(),
             showNumpad = false,
-            amount = "0"
+            amount = "0",
+            title = ""
         )
     }
 
     fun onCategorySelected(category: Category) {
         uiState = uiState.copy(
             selectedCategory = category,
-            showNumpad = category.label.isNotBlank()
+            showNumpad = category.label.isNotBlank(),
+            title = category.defaultTitle()
         )
     }
 
@@ -120,6 +124,10 @@ class AddNewTransactionViewModel @Inject constructor(
 
     fun onNoteChange(note: String) {
         uiState = uiState.copy(note = note)
+    }
+
+    fun onTitleChange(title: String) {
+        uiState = uiState.copy(title = title)
     }
 
     fun onAccountSelected(account: AccountWithCurrency) {
@@ -155,8 +163,9 @@ class AddNewTransactionViewModel @Inject constructor(
     private fun saveTransaction() {
         viewModelScope.launch {
             val selectedAccountId = uiState.selectedAccount?.account?.id ?: return@launch
+            val title = uiState.title.ifBlank { uiState.selectedCategory.defaultTitle() }
             var transaction = TransactionEntity(
-                title = "",
+                title = title,
                 categoryName = uiState.selectedCategory.label,
                 amount = uiState.amount.toDouble(),
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
@@ -171,6 +180,7 @@ class AddNewTransactionViewModel @Inject constructor(
                 showNumpad = false,
                 selectedCategory = Category(),
                 amount = "0",
+                title = "",
                 note = "",
                 selectedDateMillis = System.currentTimeMillis()
             )
@@ -194,5 +204,16 @@ class AddNewTransactionViewModel @Inject constructor(
             .atStartOfDay(ZoneId.systemDefault())
             .toInstant()
             .toEpochMilli()
+    }
+
+    private fun Category.defaultTitle(): String {
+        if (label.isBlank()) return ""
+        val type = if (uiState.selectedTabIndex == 0) "Income" else "Expense"
+        return "$label $type"
+    }
+
+    private fun TransactionEntity.defaultTitle(): String {
+        val typeLabel = if (type == TransactionType.INCOME) "Income" else "Expense"
+        return if (categoryName.isBlank()) typeLabel else "$categoryName $typeLabel"
     }
 }

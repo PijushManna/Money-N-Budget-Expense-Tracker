@@ -108,6 +108,7 @@ fun AddNewTransactionScreen(
             onTabSelected = viewModel::onTabSelected,
             onCategorySelected = viewModel::onCategorySelected,
             onKeyPress = viewModel::onKeyPress,
+            onTitleChange = viewModel::onTitleChange,
             onNoteChange = viewModel::onNoteChange,
             onAccountSelected = viewModel::onAccountSelected,
             onSelectAccountClick = viewModel::showAccountSelectionDialog,
@@ -126,6 +127,7 @@ private fun AddNewTransactionScreenContainer(
     onTabSelected: (Int) -> Unit,
     onCategorySelected: (Category) -> Unit,
     onKeyPress: (String) -> Unit,
+    onTitleChange: (String) -> Unit,
     onNoteChange: (String) -> Unit,
     onAccountSelected: (AccountWithCurrency) -> Unit,
     onSelectAccountClick: () -> Unit,
@@ -184,12 +186,14 @@ private fun AddNewTransactionScreenContainer(
         AnimatedVisibility(uiState.showNumpad) {
             AddAmountScreen(
                 amount = uiState.amount,
+                title = uiState.title,
                 note = uiState.note,
                 accounts = uiState.accounts,
                 selectedAccount = uiState.selectedAccount,
                 showAccountSelectionDialog = uiState.isAccountSelectionDialogVisible,
                 showDatePicker = uiState.isDatePickerVisible,
                 selectedDateMillis = uiState.selectedDateMillis,
+                onTitleChange = onTitleChange,
                 onNoteChange = onNoteChange,
                 onKeyPress = onKeyPress,
                 onAccountSelected = onAccountSelected,
@@ -212,6 +216,7 @@ fun AddNewTransactionScreenPreview() {
             onTabSelected = {},
             onCategorySelected = {},
             onKeyPress = {},
+            onTitleChange = {},
             onNoteChange = {},
             onAccountSelected = {},
             onSelectAccountClick = {},
@@ -321,6 +326,7 @@ fun TransactionTabs(
 @Composable
 private fun AddAmountScreen(
     amount: String,
+    title: String,
     note: String,
     accounts: List<AccountWithCurrency>,
     selectedAccount: AccountWithCurrency?,
@@ -334,6 +340,7 @@ private fun AddAmountScreen(
     onDismissAccountDialog: () -> Unit,
     onDateSelected: (Long) -> Unit,
     onDismissDatePicker: () -> Unit,
+    onTitleChange: (String) -> Unit,
     backgroundColor: Color = Color(0xFFF2F3F5)
 ) {
     if (showAccountSelectionDialog) {
@@ -360,6 +367,8 @@ private fun AddAmountScreen(
     ) {
         AmountHeader(amount, selectedAccount, onSelectAccountClick)
         Spacer(Modifier.height(16.dp))
+        TitleInput(title, onTitleChange)
+        Spacer(Modifier.height(12.dp))
         NoteInput(note, onNoteChange)
         Spacer(Modifier.height(16.dp))
         Keypad(
@@ -367,6 +376,28 @@ private fun AddAmountScreen(
             onKeyPress = onKeyPress
         )
     }
+}
+
+@Composable
+fun TitleInput(
+    title: String,
+    onTitleChange: (String) -> Unit
+) {
+    TextField(
+        value = title,
+        onValueChange = onTitleChange,
+        placeholder = { Text("Title") },
+        singleLine = true,
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(12.dp)),
+        colors = TextFieldDefaults.colors(
+            focusedContainerColor = Color.Transparent,
+            unfocusedContainerColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent
+        )
+    )
 }
 
 @Composable

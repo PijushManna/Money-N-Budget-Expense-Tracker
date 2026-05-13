@@ -34,6 +34,9 @@ import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CameraAlt
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -44,6 +47,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -68,7 +72,13 @@ import com.expense.tracker.feature.common.HeaderConfig
 import com.expense.tracker.navigation.Screen
 import com.expense.tracker.ui.theme.MoneyBudgetExpenseTrackerTheme
 import com.expense.tracker.utils.formatAmount
+import com.expense.tracker.utils.toLocalDate
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
 
 @Composable
 fun AddNewTransactionScreen(
@@ -101,7 +111,9 @@ fun AddNewTransactionScreen(
             onNoteChange = viewModel::onNoteChange,
             onAccountSelected = viewModel::onAccountSelected,
             onSelectAccountClick = viewModel::showAccountSelectionDialog,
-            onDismissAccountDialog = viewModel::hideAccountSelectionDialog
+            onDismissAccountDialog = viewModel::hideAccountSelectionDialog,
+            onDateSelected = viewModel::onDateSelected,
+            onDismissDatePicker = viewModel::hideDatePicker
         )
     }
 }
@@ -117,7 +129,9 @@ private fun AddNewTransactionScreenContainer(
     onNoteChange: (String) -> Unit,
     onAccountSelected: (AccountWithCurrency) -> Unit,
     onSelectAccountClick: () -> Unit,
-    onDismissAccountDialog: () -> Unit
+    onDismissAccountDialog: () -> Unit,
+    onDateSelected: (Long) -> Unit,
+    onDismissDatePicker: () -> Unit
 ) {
     val pagerState =
         rememberPagerState(initialPage = uiState.selectedTabIndex) { uiState.tabs.size }
@@ -174,11 +188,15 @@ private fun AddNewTransactionScreenContainer(
                 accounts = uiState.accounts,
                 selectedAccount = uiState.selectedAccount,
                 showAccountSelectionDialog = uiState.isAccountSelectionDialogVisible,
+                showDatePicker = uiState.isDatePickerVisible,
+                selectedDateMillis = uiState.selectedDateMillis,
                 onNoteChange = onNoteChange,
                 onKeyPress = onKeyPress,
                 onAccountSelected = onAccountSelected,
                 onSelectAccountClick = onSelectAccountClick,
-                onDismissAccountDialog = onDismissAccountDialog
+                onDismissAccountDialog = onDismissAccountDialog,
+                onDateSelected = onDateSelected,
+                onDismissDatePicker = onDismissDatePicker
             )
         }
     }
@@ -197,7 +215,9 @@ fun AddNewTransactionScreenPreview() {
             onNoteChange = {},
             onAccountSelected = {},
             onSelectAccountClick = {},
-            onDismissAccountDialog = {}
+            onDismissAccountDialog = {},
+            onDateSelected = {},
+            onDismissDatePicker = {}
         )
     }
 }
@@ -305,11 +325,15 @@ private fun AddAmountScreen(
     accounts: List<AccountWithCurrency>,
     selectedAccount: AccountWithCurrency?,
     showAccountSelectionDialog: Boolean,
+    showDatePicker: Boolean,
+    selectedDateMillis: Long,
     onNoteChange: (String) -> Unit,
     onKeyPress: (String) -> Unit,
     onAccountSelected: (AccountWithCurrency) -> Unit,
     onSelectAccountClick: () -> Unit,
     onDismissAccountDialog: () -> Unit,
+    onDateSelected: (Long) -> Unit,
+    onDismissDatePicker: () -> Unit,
     backgroundColor: Color = Color(0xFFF2F3F5)
 ) {
     if (showAccountSelectionDialog) {
@@ -318,6 +342,14 @@ private fun AddAmountScreen(
             selectedAccount = selectedAccount,
             onDismiss = onDismissAccountDialog,
             onAccountSelected = onAccountSelected
+        )
+    }
+
+    if (showDatePicker) {
+        TransactionDatePickerDialog(
+            selectedDateMillis = selectedDateMillis,
+            onDismiss = onDismissDatePicker,
+            onDateSelected = onDateSelected
         )
     }
 
@@ -330,7 +362,10 @@ private fun AddAmountScreen(
         Spacer(Modifier.height(16.dp))
         NoteInput(note, onNoteChange)
         Spacer(Modifier.height(16.dp))
-        Keypad(onKeyPress = onKeyPress)
+        Keypad(
+            selectedDateMillis = selectedDateMillis,
+            onKeyPress = onKeyPress
+        )
     }
 }
 
@@ -466,12 +501,48 @@ fun NoteInput(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun TransactionDatePickerDialog(
+    selectedDateMillis: Long,
+    onDismiss: () -> Unit,
+    onDateSelected: (Long) -> Unit
+) {
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDateMillis.toUtcStartOfDayMillis()
+    )
+
+    DatePickerDialog(
+        onDismissRequest = onDismiss,
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    datePickerState.selectedDateMillis?.let(onDateSelected)
+                }
+            ) {
+                Text("OK")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    ) {
+        DatePicker(state = datePickerState)
+    }
+}
+
 val keypadKeys = listOf(
     "7", "8", "9", "Today", "4", "5", "6", "+", "1", "2", "3", "-", ".", "0", "⌫", "✓"
 )
 
 @Composable
-fun Keypad(onKeyPress: (String) -> Unit) {
+fun Keypad(
+    selectedDateMillis: Long,
+    onKeyPress: (String) -> Unit
+) {
+    val selectedDateLabel = selectedDateMillis.toKeypadDateLabel()
 
     LazyVerticalGrid(
         columns = GridCells.Fixed(4),
@@ -479,7 +550,10 @@ fun Keypad(onKeyPress: (String) -> Unit) {
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(keypadKeys) { key ->
-            KeypadButton(key) {
+            KeypadButton(
+                label = key,
+                dateLabel = selectedDateLabel
+            ) {
                 onKeyPress(key)
             }
         }
@@ -488,7 +562,9 @@ fun Keypad(onKeyPress: (String) -> Unit) {
 
 @Composable
 fun KeypadButton(
-    label: String, onClick: () -> Unit
+    label: String,
+    dateLabel: String,
+    onClick: () -> Unit
 ) {
     val isConfirm = label == "✓"
     val isToday = label == "Today"
@@ -513,7 +589,7 @@ fun KeypadButton(
                     )
                     Spacer(Modifier.width(6.dp))
                     Text(
-                        "Today",
+                        dateLabel,
                         color = MaterialTheme.colorScheme.primary,
                         style = MaterialTheme.typography.bodySmall
                     )
@@ -525,4 +601,24 @@ fun KeypadButton(
             else -> Text(label, fontSize = 22.sp)
         }
     }
+}
+
+private fun Long.toKeypadDateLabel(): String {
+    val selectedDate = toLocalDate()
+    return if (selectedDate == LocalDate.now()) {
+        "Today"
+    } else {
+        selectedDate.format(DateTimeFormatter.ofPattern("dd MMM"))
+    }
+}
+
+private fun Long.toUtcStartOfDayMillis(): Long {
+    val selectedDate = Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+
+    return selectedDate
+        .atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
 }

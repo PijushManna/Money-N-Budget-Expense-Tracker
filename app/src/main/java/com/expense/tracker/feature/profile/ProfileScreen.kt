@@ -46,6 +46,8 @@ import androidx.navigation.compose.rememberNavController
 import com.expense.tracker.core.domain.models.AccountUi
 import com.expense.tracker.feature.common.Footer
 import com.expense.tracker.navigation.Screen
+import com.expense.tracker.utils.formatAmount
+import com.expense.tracker.utils.openAppSettings
 
 @Composable
 fun ProfileScreen(
@@ -117,11 +119,12 @@ fun ProfileScreen(
 
             // Header
             AccountsPager(
-                accounts = state.accounts.map { account ->
+                accounts = state.accounts.map { accountWithCurrency ->
+                    val account = accountWithCurrency.account
                     AccountUi(
                         id = account.id.toString(),
                         name = account.name,
-                        balance = account.balance.toString(),
+                        balance = account.balance.formatAmount(accountWithCurrency.currency.symbol),
                         subtitle = account.type
                     )
                 },
@@ -146,8 +149,12 @@ fun ProfileScreen(
                 icon = Icons.Default.Refresh, title = "Recurring Payments",
                 onClick = { navController.navigate(Screen.ManageRecurringPayment.route) }
             )
-            ProfileItem(icon = Icons.Default.Settings, title = "Settings", onClick = {})
-            ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps", onClick = {})
+            ProfileItem(icon = Icons.Default.Settings, title = "Settings", onClick = {
+                openAppSettings(context)
+            })
+            ProfileItem(icon = Icons.Default.Apps, title = "Our Other Apps", onClick = {
+                openOtherApps(context)
+            })
         }
     }
 }
@@ -205,19 +212,27 @@ fun recommendToFriends(context: Context) {
                     "https://play.google.com/store/apps/details?id=${context.packageName}"
         )
     }
-    context.startActivity(Intent.createChooser(intent, "Share via"))
+    startActivitySafely(context, Intent.createChooser(intent, "Share via"))
 }
 
 fun provideFeedback(context: Context) {
-    val intent = Intent(Intent.ACTION_SENDTO).apply {
+    val emailIntent = Intent(Intent.ACTION_SENDTO).apply {
         data = Uri.parse("mailto:")
         putExtra(Intent.EXTRA_EMAIL, arrayOf("support@yourapp.com"))
         putExtra(Intent.EXTRA_SUBJECT, "App Feedback")
         putExtra(Intent.EXTRA_TEXT, "Hi,\n\nI would like to share the following feedback:\n")
     }
 
-    if (intent.resolveActivity(context.packageManager) != null) {
-        context.startActivity(intent)
+    if (emailIntent.resolveActivity(context.packageManager) != null) {
+        context.startActivity(emailIntent)
+    } else {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "message/rfc822"
+            putExtra(Intent.EXTRA_EMAIL, arrayOf("support@yourapp.com"))
+            putExtra(Intent.EXTRA_SUBJECT, "App Feedback")
+            putExtra(Intent.EXTRA_TEXT, "Hi,\n\nI would like to share the following feedback:\n")
+        }
+        startActivitySafely(context, Intent.createChooser(shareIntent, "Send feedback"))
     }
 }
 
@@ -230,7 +245,8 @@ fun rateUs(context: Context) {
         context.startActivity(intent)
     } catch (e: ActivityNotFoundException) {
         // Play Store not available → open in browser
-        context.startActivity(
+        startActivitySafely(
+            context,
             Intent(
                 Intent.ACTION_VIEW,
                 Uri.parse("https://play.google.com/store/apps/details?id=$appPackage")
@@ -239,6 +255,34 @@ fun rateUs(context: Context) {
     }
 }
 
+fun openOtherApps(context: Context) {
+    val appName = context.applicationInfo.loadLabel(context.packageManager).toString()
+    val query = Uri.encode(appName)
+    val marketIntent = Intent(
+        Intent.ACTION_VIEW,
+        Uri.parse("market://search?q=$query&c=apps")
+    )
+
+    try {
+        context.startActivity(marketIntent)
+    } catch (e: ActivityNotFoundException) {
+        startActivitySafely(
+            context,
+            Intent(
+                Intent.ACTION_VIEW,
+                Uri.parse("https://play.google.com/store/search?q=$query&c=apps")
+            )
+        )
+    }
+}
+
+private fun startActivitySafely(context: Context, intent: Intent) {
+    try {
+        context.startActivity(intent)
+    } catch (e: ActivityNotFoundException) {
+        e.printStackTrace()
+    }
+}
 
 @Preview
 @Composable

@@ -19,6 +19,9 @@ import com.expense.tracker.utils.formatAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 data class AddNewTransactionUiState(
@@ -30,9 +33,11 @@ data class AddNewTransactionUiState(
     val selectedCategory: Category = Category(),
     val amount: String = "0",
     val note: String = "",
+    val selectedDateMillis: Long = System.currentTimeMillis(),
     val accounts: List<AccountWithCurrency> = emptyList(),
     val selectedAccount: AccountWithCurrency? = null,
-    val isAccountSelectionDialogVisible: Boolean = false
+    val isAccountSelectionDialogVisible: Boolean = false,
+    val isDatePickerVisible: Boolean = false
 )
 
 @HiltViewModel
@@ -73,6 +78,7 @@ class AddNewTransactionViewModel @Inject constructor(
                             selectedCategory = Category(),
                             amount = transaction.amount.formatAmount(),
                             note = transaction.note ?: "",
+                            selectedDateMillis = transaction.timestamp,
                             showNumpad = true,
                             selectedAccount = uiState.accounts.find { it.account.id == transaction.accountId }
                         )
@@ -107,6 +113,7 @@ class AddNewTransactionViewModel @Inject constructor(
     fun onKeyPress(key: String) {
         when (key) {
             "✓" -> saveTransaction()
+            "Today" -> showDatePicker()
             else -> uiState = uiState.copy(amount = handleInput(uiState.amount, key))
         }
     }
@@ -130,6 +137,21 @@ class AddNewTransactionViewModel @Inject constructor(
         uiState = uiState.copy(isAccountSelectionDialogVisible = false)
     }
 
+    fun showDatePicker() {
+        uiState = uiState.copy(isDatePickerVisible = true)
+    }
+
+    fun hideDatePicker() {
+        uiState = uiState.copy(isDatePickerVisible = false)
+    }
+
+    fun onDateSelected(dateMillis: Long) {
+        uiState = uiState.copy(
+            selectedDateMillis = dateMillis.toLocalStartOfDayMillis(),
+            isDatePickerVisible = false
+        )
+    }
+
     private fun saveTransaction() {
         viewModelScope.launch {
             val selectedAccountId = uiState.selectedAccount?.account?.id ?: return@launch
@@ -140,6 +162,7 @@ class AddNewTransactionViewModel @Inject constructor(
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
                 note = uiState.note,
                 accountId = selectedAccountId,
+                timestamp = uiState.selectedDateMillis,
                 smsId = System.currentTimeMillis()
             )
             if (uiState.id != -1L) transaction = transaction.copy(id = uiState.id)
@@ -148,7 +171,8 @@ class AddNewTransactionViewModel @Inject constructor(
                 showNumpad = false,
                 selectedCategory = Category(),
                 amount = "0",
-                note = ""
+                note = "",
+                selectedDateMillis = System.currentTimeMillis()
             )
         }
     }
@@ -159,5 +183,16 @@ class AddNewTransactionViewModel @Inject constructor(
             "+", "-", "Today" -> current
             else -> if (current == "0") key else (current + key)
         }
+    }
+
+    private fun Long.toLocalStartOfDayMillis(): Long {
+        val selectedDate = Instant.ofEpochMilli(this)
+            .atZone(ZoneOffset.UTC)
+            .toLocalDate()
+
+        return selectedDate
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
     }
 }

@@ -9,11 +9,11 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PieChart
-import androidx.compose.material.icons.filled.Receipt
+import androidx.compose.material.icons.filled.TrackChanges
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.PieChart
-import androidx.compose.material.icons.outlined.Receipt
+import androidx.compose.material.icons.outlined.TrackChanges
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -78,7 +78,7 @@ sealed class BottomNavigationRoute(
         BottomNavigationRoute("charts", Icons.Outlined.PieChart, Icons.Filled.PieChart, "Charts")
 
     object Reports :
-        BottomNavigationRoute("reports", Icons.Outlined.Receipt, Icons.Filled.Receipt, "Reports")
+        BottomNavigationRoute("goals", Icons.Outlined.TrackChanges, Icons.Filled.TrackChanges, "Goals")
 
     object Profile : BottomNavigationRoute(
         "profile",

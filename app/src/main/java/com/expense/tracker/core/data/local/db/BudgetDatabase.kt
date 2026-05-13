@@ -9,12 +9,14 @@ import com.expense.tracker.core.data.local.dao.AccountDao
 import com.expense.tracker.core.data.local.dao.BudgetDao
 import com.expense.tracker.core.data.local.dao.CategoryDao
 import com.expense.tracker.core.data.local.dao.CurrencyDao
+import com.expense.tracker.core.data.local.dao.GoalDao
 import com.expense.tracker.core.data.local.dao.RecurringPaymentDao
 import com.expense.tracker.core.data.local.dao.TransactionDao
 import com.expense.tracker.core.data.local.entities.AccountEntity
 import com.expense.tracker.core.data.local.entities.BudgetEntity
 import com.expense.tracker.core.data.local.entities.CategoryEntity
 import com.expense.tracker.core.data.local.entities.CurrencyEntity
+import com.expense.tracker.core.data.local.entities.GoalEntity
 import com.expense.tracker.core.data.local.entities.RecurringPaymentEntity
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 
@@ -25,9 +27,10 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
         BudgetEntity::class,
         RecurringPaymentEntity::class,
         AccountEntity::class,
-        CurrencyEntity::class
+        CurrencyEntity::class,
+        GoalEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = false
 )
 @TypeConverters(Converters::class, RecurringConverters::class)
@@ -39,4 +42,5 @@ abstract class BudgetDatabase : RoomDatabase() {
     abstract fun recurringPaymentDao(): RecurringPaymentDao
     abstract fun accountDao(): AccountDao
     abstract fun currencyDao(): CurrencyDao
+    abstract fun goalDao(): GoalDao
 }

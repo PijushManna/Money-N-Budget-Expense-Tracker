@@ -11,6 +11,7 @@ import androidx.navigation.navArgument
 import com.expense.tracker.feature.add.AddNewTransactionScreen
 import com.expense.tracker.feature.chart.ChartsScreen
 import com.expense.tracker.feature.details.DetailsScreen
+import com.expense.tracker.feature.goals.GoalsScreen
 import com.expense.tracker.feature.home.HomeScreen
 import com.expense.tracker.feature.profile.ProfileScreen
 import com.expense.tracker.feature.recurring.ui.ManageRecurringPaymentsScreen
@@ -35,7 +36,7 @@ fun NavGraph() {
             ChartsScreen(navController = navController)
         }
         composable(Screen.Reports.route) {
-            HomeScreen(navController = navController)
+            GoalsScreen(navController = navController)
         }
         composable(Screen.Profile.route) {
             ProfileScreen(navController = navController)
@@ -68,7 +69,7 @@ fun NavGraph() {
 sealed class Screen(val route: String) {
     object Home : Screen("home")
     object Charts : Screen("charts")
-    object Reports : Screen("reports")
+    object Reports : Screen("goals")
     object Profile : Screen("profile")
     object Add : Screen("add")
     object Details : Screen("details")

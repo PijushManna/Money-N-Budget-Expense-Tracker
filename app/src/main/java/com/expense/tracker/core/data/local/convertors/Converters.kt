@@ -1,6 +1,7 @@
 package com.expense.tracker.core.data.local.convertors
 
 import androidx.room.TypeConverter
+import com.expense.tracker.core.data.local.entities.GoalPeriod
 import com.expense.tracker.core.data.local.entities.TransactionType
 
 class Converters {
@@ -11,4 +12,10 @@ class Converters {
     @TypeConverter
     fun toTransactionType(value: String): TransactionType =
         TransactionType.valueOf(value)
+
+    @TypeConverter
+    fun fromGoalPeriod(period: GoalPeriod): String = period.name
+
+    @TypeConverter
+    fun toGoalPeriod(value: String): GoalPeriod = GoalPeriod.valueOf(value)
 }

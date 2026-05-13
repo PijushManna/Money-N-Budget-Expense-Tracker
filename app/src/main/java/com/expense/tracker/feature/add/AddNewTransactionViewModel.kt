@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.expense.tracker.core.data.local.entities.AccountEntity
+import com.expense.tracker.core.data.local.entities.AccountWithCurrency
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
 import com.expense.tracker.core.domain.models.Category
@@ -17,8 +17,7 @@ import com.expense.tracker.core.domain.usecase.GetAllAccountsUseCase
 import com.expense.tracker.utils.formatAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,9 +30,8 @@ data class AddNewTransactionUiState(
     val selectedCategory: Category = Category(),
     val amount: String = "0",
     val note: String = "",
-    val currency: String = "₹",
-    val accounts: List<AccountEntity> = emptyList(),
-    val selectedAccount: AccountEntity? = null
+    val accounts: List<AccountWithCurrency> = emptyList(),
+    val selectedAccount: AccountWithCurrency? = null
 )
 
 @HiltViewModel
@@ -47,9 +45,13 @@ class AddNewTransactionViewModel @Inject constructor(
         private set
 
     init {
-        getAllAccounts()
-
         viewModelScope.launch {
+            val accounts = getAllAccountsUseCase().last()
+            uiState = uiState.copy(
+                accounts = accounts,
+                selectedAccount = accounts.firstOrNull()
+            )
+
             savedStateHandle.get<Long>("id")?.let { id ->
                 if (id >= 0) {
                     transactionRepository.getTransactionById(id).collectLatest { transaction ->
@@ -58,26 +60,16 @@ class AddNewTransactionViewModel @Inject constructor(
                                 id = transaction.id,
                                 selectedTabIndex = if (transaction.type == TransactionType.INCOME) 0 else 1,
                                 selectedCategory = Category(),
-                                amount = transaction.amount.formatAmount(transaction.currency),
+                                amount = transaction.amount.formatAmount(),
                                 note = transaction.note ?: "",
-                                currency = transaction.currency,
                                 showNumpad = true,
-                                selectedAccount = uiState.accounts.find { it.id == transaction.accountId }
+                                selectedAccount = accounts.find { it.account.id == transaction.accountId }
                             )
                         }
                     }
                 }
             }
         }
-    }
-
-    private fun getAllAccounts() {
-        getAllAccountsUseCase().onEach { accounts ->
-            uiState = uiState.copy(
-                accounts = accounts,
-                selectedAccount = accounts.firstOrNull()
-            )
-        }.launchIn(viewModelScope)
     }
 
     fun onTabSelected(index: Int) {
@@ -113,7 +105,7 @@ class AddNewTransactionViewModel @Inject constructor(
         uiState = uiState.copy(note = note)
     }
 
-    fun onAccountSelected(account: AccountEntity) {
+    fun onAccountSelected(account: AccountWithCurrency) {
         uiState = uiState.copy(selectedAccount = account)
     }
 
@@ -125,8 +117,8 @@ class AddNewTransactionViewModel @Inject constructor(
                 amount = uiState.amount.toDouble(),
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
                 note = uiState.note,
-                currency = uiState.currency,
-                accountId = uiState.selectedAccount?.id ?: 0L,
+                accountId = uiState.selectedAccount?.account?.id ?: 0L,
+                smsId = System.currentTimeMillis()
             )
             if (uiState.id != -1L) transaction = transaction.copy(id = uiState.id)
             transactionRepository.addTransaction(transaction)

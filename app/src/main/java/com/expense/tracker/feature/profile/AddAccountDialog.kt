@@ -59,7 +59,8 @@ fun AddAccountDialog(
                         AccountEntity(
                             name = name,
                             balance = balance.toDoubleOrNull() ?: 0.0,
-                            type = type
+                            type = type,
+                            currencyCode = "INR"
                         )
                     )
                 }) {

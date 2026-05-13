@@ -8,6 +8,7 @@ sealed class TransactionsViewType {
         val id: Long,
         val icon: ImageVector,
         val label: String,
-        val amount: String
+        val amount: String,
+        val categoryName: String
     ) : TransactionsViewType()
 }

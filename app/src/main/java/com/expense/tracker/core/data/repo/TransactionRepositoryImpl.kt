@@ -3,6 +3,7 @@ package com.expense.tracker.core.data.repo
 import com.expense.tracker.core.data.local.dao.TransactionDao
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
+import com.expense.tracker.core.data.local.entities.TransactionWithAccount
 import com.expense.tracker.core.domain.repo.TransactionRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -13,7 +14,7 @@ class TransactionRepositoryImpl @Inject constructor(
 ) : TransactionRepository {
 
     override suspend fun addTransaction(transaction: TransactionEntity) {
-        transactionDao.insert(transaction)
+//        transactionDao.insert(transaction)
     }
 
     override suspend fun deleteTransaction(transaction: TransactionEntity) {
@@ -24,7 +25,7 @@ class TransactionRepositoryImpl @Inject constructor(
         transactionDao.deleteById(id)
     }
 
-    override fun getAllTransactions(): Flow<List<TransactionEntity>> {
+    override fun getAllTransactions(): Flow<List<TransactionWithAccount>> {
         return transactionDao.getAllTransactions()
     }
 
@@ -32,7 +33,7 @@ class TransactionRepositoryImpl @Inject constructor(
         return transactionDao.getFirstTransaction()
     }
 
-    override fun getTransactionsBetween(startDate: Long, endDate: Long): Flow<List<TransactionEntity>> {
+    override fun getTransactionsBetween(startDate: Long, endDate: Long): Flow<List<TransactionWithAccount>> {
         return transactionDao.getTransactionsBetween(startDate, endDate)
     }
 

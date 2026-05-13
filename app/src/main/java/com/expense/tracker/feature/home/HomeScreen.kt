@@ -1,5 +1,6 @@
 package com.expense.tracker.feature.home
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +16,6 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -43,6 +43,9 @@ import com.expense.tracker.feature.common.HeaderConfig
 import com.expense.tracker.feature.common.TripleActionDialog
 import com.expense.tracker.feature.home.states.OverviewUiState
 import com.expense.tracker.feature.home.states.PendingRecurringTransaction
+import com.expense.tracker.feature.home.views.DateFilterDialog
+import com.expense.tracker.feature.home.views.TransactionListHeaderItem
+import com.expense.tracker.feature.home.views.TransactionsListItem
 
 @Composable
 fun HomeScreen(
@@ -51,11 +54,12 @@ fun HomeScreen(
     navController: NavController
 ) {
     val overviewUiState by viewModel.overviewUiState.collectAsState()
-    val overview by derivedStateOf { overviewUiState }
-    val transactions by viewModel.transactions.collectAsState()
+    val overview by remember { derivedStateOf { overviewUiState } }
+    val transactions by viewModel.transactionsUiState.collectAsState()
     val pendingTransactions by viewModel.pendingTransactions.collectAsState()
     var rpId by remember { mutableStateOf<Long?>(null) }
     var showRPDialog by remember { mutableStateOf(false) }
+    var showDateFilterDialog by remember { mutableStateOf(false) }
 
     Scaffold(modifier = modifier, topBar = {
         Header(
@@ -75,12 +79,14 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(it)
         ) {
-            Overview(Modifier, uiState = overview)
+            Overview(Modifier, uiState = overview, filterStr = viewModel.filterStr.toString()){
+                showDateFilterDialog = true
+            }
             PendingTransactions(pendingTransactions){
                 showRPDialog = true
                 rpId = it.id
             }
-            TransactionDetails(TransactionsUiMapper.map(transactions), navController)
+            TransactionDetails(transactions, navController)
         }
     }
 
@@ -113,6 +119,16 @@ fun HomeScreen(
         onDismiss = { showRPDialog = false }
     )
 
+    AnimatedVisibility(showDateFilterDialog) {
+        DateFilterDialog(
+            selectedFilter = viewModel.filterStr,
+            onDismiss = { showDateFilterDialog = false },
+            onApply = {
+                viewModel.filterStr = it
+                showDateFilterDialog = false
+            }
+        )
+    }
 }
 
 @Composable
@@ -156,7 +172,7 @@ fun HomeScreenContainer(
 }
 
 @Composable
-fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
+fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState,filterStr:String, onClick: () -> Unit = {}) {
     Column(modifier = modifier.background(MaterialTheme.colorScheme.primaryContainer)) {
         HorizontalDivider(thickness = 0.5.dp)
         Row(modifier = Modifier.fillMaxWidth()) {
@@ -166,8 +182,8 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
             ) {
                 Text(uiState.selectedYear, style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    uiState.selectedMonth,
-                    style = MaterialTheme.typography.headlineMedium,
+                    filterStr,
+                    style = MaterialTheme.typography.labelMedium,
                     modifier = Modifier
                         .clip(RoundedCornerShape(12.dp))
                         .background(
@@ -177,8 +193,10 @@ fun Overview(modifier: Modifier = Modifier, uiState: OverviewUiState) {
                         .border(1.dp, MaterialTheme.colorScheme.tertiary,
                             RoundedCornerShape(12.dp)
                         )
-                        .clickable {}
-                        .padding(horizontal = 12.dp))
+                        .clickable {
+                            onClick()
+                        }
+                        .padding(all = 12.dp))
             }
             LazyRow(horizontalArrangement = Arrangement.SpaceAround) {
                 item {
@@ -243,38 +261,14 @@ fun ColumnScope.TransactionDetails(transactions: List<TransactionsViewType>, nav
         items(transactions) {
             when (it) {
                 is TransactionsViewType.Header -> {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(vertical = 8.dp, horizontal = 12.dp)
-                    ) {
-                        Text(it.date, style = MaterialTheme.typography.bodySmall)
-                        Text(it.total, style = MaterialTheme.typography.bodySmall)
-                    }
-                    HorizontalDivider(thickness = 0.5.dp)
+                    TransactionListHeaderItem(
+                        item = it
+                    )
                 }
 
                 is TransactionsViewType.Transaction -> {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clickable {
-                                navController.navigate("details/${it.id}")
-                            }
-                            .padding(vertical = 8.dp, horizontal = 12.dp)
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(imageVector = it.icon, contentDescription = it.label)
-                            Text(it.label, style = MaterialTheme.typography.bodyMedium)
-                        }
-                        Text(it.amount, style = MaterialTheme.typography.bodyMedium)
+                    TransactionsListItem(item = it) {
+                        navController.navigate("details/${it.id}")
                     }
                 }
             }

@@ -9,7 +9,6 @@ import androidx.room.PrimaryKey
 data class CategoryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0L,
-
     val name: String,
     val icon: String, // emoji or icon name
     val color: Long  // Color hex stored as Long

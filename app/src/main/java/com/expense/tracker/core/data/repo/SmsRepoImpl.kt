@@ -10,14 +10,15 @@ import javax.inject.Inject
 class SmsRepoImpl @Inject constructor(@param:ApplicationContext private val context: Context) : SmsRepo {
     override fun getAllSms(): List<SmsMessage> {
         val smsList = mutableListOf<SmsMessage>()
-
+        val lastSync = getLastSync(context)
         val cursor = context.contentResolver.query(
             Telephony.Sms.CONTENT_URI,
             null,
-            null,
-            null,
-            "${Telephony.Sms.DATE} DESC"
+            "date > ?",
+            arrayOf(lastSync.toString()),
+            "${Telephony.Sms.DATE} ASC"
         )
+        var latestTime = lastSync
 
         cursor?.use {
 
@@ -50,8 +51,25 @@ class SmsRepoImpl @Inject constructor(@param:ApplicationContext private val cont
                         date = date
                     )
                 )
+
+                if (date > latestTime) {
+                    latestTime = date
+                }
             }
         }
+        saveLastSync(context, latestTime)
         return smsList
     }
+}
+
+const val KEY_LAST_SYNC = "last_sms_sync_time"
+
+private fun saveLastSync(context: Context, time: Long) {
+    val prefs = context.getSharedPreferences("sms_prefs", Context.MODE_PRIVATE)
+    prefs.edit().putLong(KEY_LAST_SYNC, time).apply()
+}
+
+private fun getLastSync(context: Context): Long {
+    val prefs = context.getSharedPreferences("sms_prefs", Context.MODE_PRIVATE)
+    return prefs.getLong(KEY_LAST_SYNC, 0L) // first time = 0
 }

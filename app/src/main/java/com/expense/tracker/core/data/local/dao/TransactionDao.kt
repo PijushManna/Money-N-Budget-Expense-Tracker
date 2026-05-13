@@ -1,29 +1,23 @@
 package com.expense.tracker.core.data.local.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
-import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 import com.expense.tracker.core.data.local.entities.TransactionType
+import com.expense.tracker.core.data.local.entities.TransactionWithAccount
 import com.expense.tracker.core.domain.models.CategorySpend
 import kotlinx.coroutines.flow.Flow
 
 @Dao
-interface TransactionDao {
-
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(transaction: TransactionEntity)
-
-    @Delete
-    suspend fun delete(transaction: TransactionEntity)
+interface TransactionDao : BaseDao<TransactionEntity> {
 
     @Query("DELETE FROM transactions WHERE id = :id")
     suspend fun deleteById(id: Long)
 
+    @Transaction
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC")
-    fun getAllTransactions(): Flow<List<TransactionEntity>>
+    fun getAllTransactions(): Flow<List<TransactionWithAccount>>
 
     @Query("SELECT * FROM transactions ORDER BY timestamp DESC LIMIT 1")
     fun getFirstTransaction(): Flow<TransactionEntity?>
@@ -42,8 +36,9 @@ interface TransactionDao {
         end: Long
     ): Flow<List<TransactionEntity>>
 
+    @Transaction
     @Query("SELECT * FROM transactions WHERE timestamp BETWEEN :start AND :end ORDER BY timestamp DESC")
-    fun getTransactionsBetween(start: Long, end: Long): Flow<List<TransactionEntity>>
+    fun getTransactionsBetween(start: Long, end: Long): Flow<List<TransactionWithAccount>>
 
     @Query("SELECT SUM(amount) FROM transactions WHERE type = :type")
     fun getTotalAmount(type: TransactionType): Flow<Double?>

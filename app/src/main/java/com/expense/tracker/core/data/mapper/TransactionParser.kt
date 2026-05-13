@@ -91,25 +91,24 @@ object TransactionParser {
         val merchant = extractMerchant(body)
 
         return TransactionEntity(
-            title = merchant ?: "",
+            title = merchant,
             amount = amount,
             type = type,
             categoryName = extractCategory(sms.body),
             note = sms.body,
-            currency = "₹",
             accountId = 0,
             smsId = sms.id,
             timestamp = sms.date
         )
     }
 
-    private fun extractMerchant(body: String): String? {
+    private fun extractMerchant(body: String): String {
 
-        val merchantRegex =
-            Regex("(?:at|to|from)\\s([a-zA-Z0-9\\-\\s]{2,30})")
-
-        return merchantRegex.find(body)
-            ?.groupValues?.get(1)
-            ?.trim()
+        val pattern = Regex(
+            "(?i)upi\\s*/?\\s*p2m\\s*/\\s*[^/\\s]+\\s*/\\s*([^/\\n]+)"
+        )
+        return pattern.find(body)
+            ?.groupValues?.getOrNull(1)
+            ?.trim()?.capitalize().orEmpty()
     }
 }

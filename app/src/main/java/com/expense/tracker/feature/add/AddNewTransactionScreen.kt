@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -61,7 +60,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.expense.tracker.core.data.local.entities.AccountEntity
+import com.expense.tracker.core.data.local.entities.AccountWithCurrency
 import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.core.domain.models.incomeCategories
@@ -114,7 +113,7 @@ private fun AddNewTransactionScreenContainer(
     onCategorySelected: (Category) -> Unit,
     onKeyPress: (String) -> Unit,
     onNoteChange: (String) -> Unit,
-    onAccountSelected: (AccountEntity) -> Unit
+    onAccountSelected: (AccountWithCurrency) -> Unit
 ) {
     val pagerState =
         rememberPagerState(initialPage = uiState.selectedTabIndex) { uiState.tabs.size }
@@ -294,11 +293,11 @@ fun TransactionTabs(
 private fun AddAmountScreen(
     amount: String,
     note: String,
-    accounts: List<AccountEntity>,
-    selectedAccount: AccountEntity?,
+    accounts: List<AccountWithCurrency>,
+    selectedAccount: AccountWithCurrency?,
     onNoteChange: (String) -> Unit,
     onKeyPress: (String) -> Unit,
-    onAccountSelected: (AccountEntity) -> Unit,
+    onAccountSelected: (AccountWithCurrency) -> Unit,
     backgroundColor: Color = Color(0xFFF2F3F5)
 ) {
     Column(
@@ -317,9 +316,9 @@ private fun AddAmountScreen(
 @Composable
 fun AmountHeader(
     amount: String,
-    accounts: List<AccountEntity>,
-    selectedAccount: AccountEntity?,
-    onAccountSelected: (AccountEntity) -> Unit
+    accounts: List<AccountWithCurrency>,
+    selectedAccount: AccountWithCurrency?,
+    onAccountSelected: (AccountWithCurrency) -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -336,9 +335,9 @@ fun AmountHeader(
 
 @Composable
 fun AccountDropdown(
-    accounts: List<AccountEntity>,
-    selectedAccount: AccountEntity?,
-    onAccountSelected: (AccountEntity) -> Unit
+    accounts: List<AccountWithCurrency>,
+    selectedAccount: AccountWithCurrency?,
+    onAccountSelected: (AccountWithCurrency) -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
@@ -349,7 +348,7 @@ fun AccountDropdown(
         ) {
             Icon(Icons.Outlined.Badge, contentDescription = null)
             Spacer(modifier = Modifier.width(8.dp))
-            Text(text = selectedAccount?.name ?: "Select Account")
+            Text(text = selectedAccount?.account?.name ?: "Select Account")
         }
 
         DropdownMenu(
@@ -357,7 +356,7 @@ fun AccountDropdown(
             onDismissRequest = { expanded = false }
         ) {
             accounts.forEach { account ->
-                DropdownMenuItem(text = { Text(text = account.name) }, onClick = {
+                DropdownMenuItem(text = { Text(text = selectedAccount?.account?.name.orEmpty()) }, onClick = {
                     onAccountSelected(account)
                     expanded = false
                 })

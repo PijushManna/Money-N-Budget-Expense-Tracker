@@ -8,8 +8,6 @@ import com.expense.tracker.core.domain.usecase.GetAllAccountsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,9 +25,7 @@ class ProfileViewModel @Inject constructor(
     }
 
     private fun getAllAccounts() {
-        getAllAccountsUseCase().onEach { accounts ->
-            _state.value = _state.value.copy(accounts = accounts)
-        }.launchIn(viewModelScope)
+
     }
 
     fun addAccount(account: AccountEntity) {

@@ -8,11 +8,13 @@ import com.expense.tracker.core.data.local.convertors.RecurringConverters
 import com.expense.tracker.core.data.local.dao.AccountDao
 import com.expense.tracker.core.data.local.dao.BudgetDao
 import com.expense.tracker.core.data.local.dao.CategoryDao
+import com.expense.tracker.core.data.local.dao.CurrencyDao
 import com.expense.tracker.core.data.local.dao.RecurringPaymentDao
 import com.expense.tracker.core.data.local.dao.TransactionDao
 import com.expense.tracker.core.data.local.entities.AccountEntity
 import com.expense.tracker.core.data.local.entities.BudgetEntity
 import com.expense.tracker.core.data.local.entities.CategoryEntity
+import com.expense.tracker.core.data.local.entities.CurrencyEntity
 import com.expense.tracker.core.data.local.entities.RecurringPaymentEntity
 import com.expense.tracker.core.data.local.entities.TransactionEntity
 
@@ -22,7 +24,8 @@ import com.expense.tracker.core.data.local.entities.TransactionEntity
         CategoryEntity::class,
         BudgetEntity::class,
         RecurringPaymentEntity::class,
-        AccountEntity::class
+        AccountEntity::class,
+        CurrencyEntity::class
     ],
     version = 2,
     exportSchema = false
@@ -35,4 +38,5 @@ abstract class BudgetDatabase : RoomDatabase() {
     abstract fun budgetDao(): BudgetDao
     abstract fun recurringPaymentDao(): RecurringPaymentDao
     abstract fun accountDao(): AccountDao
+    abstract fun currencyDao(): CurrencyDao
 }

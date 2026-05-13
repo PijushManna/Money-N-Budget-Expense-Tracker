@@ -1,15 +1,16 @@
 package com.expense.tracker.feature.home.views
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -61,8 +62,15 @@ fun DateFilterDialog(
 
             Column {
 
-                // 🔘 Month-Year Option
-                Row(verticalAlignment = Alignment.CenterVertically) {
+                Row(
+                    modifier = Modifier.clickable {
+                        tempFilter = DateFilter.MonthYear(
+                            month = now.monthValue,
+                            year = now.year
+                        )
+                    },
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     RadioButton(
                         selected = tempFilter is DateFilter.MonthYear,
                         onClick = {
@@ -83,7 +91,6 @@ fun DateFilterDialog(
 
                     Row {
 
-                        // Month dropdown
                         DropdownSelector(
                             label = "Month",
                             options = months,
@@ -96,7 +103,6 @@ fun DateFilterDialog(
 
                         Spacer(Modifier.width(8.dp))
 
-                        // Year dropdown
                         DropdownSelector(
                             label = "Year",
                             options = years.map { it.toString() },
@@ -110,7 +116,6 @@ fun DateFilterDialog(
 
                 Spacer(Modifier.height(16.dp))
 
-                // 🔘 Quick Options
                 FilterOption("Last 3 Months", tempFilter is DateFilter.Last3Months) {
                     tempFilter = DateFilter.Last3Months
                 }
@@ -131,6 +136,7 @@ fun DateFilterDialog(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DropdownSelector(
     label: String,
@@ -140,7 +146,10 @@ fun DropdownSelector(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    Box {
+    ExposedDropdownMenuBox(
+        expanded = expanded,
+        onExpandedChange = { expanded = it }
+    ) {
         OutlinedTextField(
             value = selected,
             onValueChange = {},
@@ -148,10 +157,14 @@ fun DropdownSelector(
             readOnly = true,
             modifier = Modifier
                 .width(120.dp)
-                .clickable { expanded = true }
+                .menuAnchor(),
+            trailingIcon = {
+                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+            },
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
         )
 
-        DropdownMenu(
+        ExposedDropdownMenu(
             expanded = expanded,
             onDismissRequest = { expanded = false }
         ) {

@@ -57,7 +57,7 @@ class HomeViewModel @Inject constructor(
     }
 
     val year = 2026
-    val month = 3
+    val month = 4
     val ran = getMonthRange(year, month)
     val transactions = transactionRepository.getTransactionsBetween(ran.first, ran.second)
     val accounts = accountRepository.getAllAccounts()

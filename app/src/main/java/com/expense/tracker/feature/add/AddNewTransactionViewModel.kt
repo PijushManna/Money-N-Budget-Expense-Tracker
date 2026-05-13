@@ -13,11 +13,11 @@ import com.expense.tracker.core.domain.models.Category
 import com.expense.tracker.core.domain.models.expenseCategories
 import com.expense.tracker.core.domain.models.incomeCategories
 import com.expense.tracker.core.domain.repo.TransactionRepository
+import com.expense.tracker.core.domain.usecase.AddTransactionUseCase
 import com.expense.tracker.core.domain.usecase.GetAllAccountsUseCase
 import com.expense.tracker.utils.formatAmount
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -31,12 +31,14 @@ data class AddNewTransactionUiState(
     val amount: String = "0",
     val note: String = "",
     val accounts: List<AccountWithCurrency> = emptyList(),
-    val selectedAccount: AccountWithCurrency? = null
+    val selectedAccount: AccountWithCurrency? = null,
+    val isAccountSelectionDialogVisible: Boolean = false
 )
 
 @HiltViewModel
 class AddNewTransactionViewModel @Inject constructor(
     private val transactionRepository: TransactionRepository,
+    private val addTransactionUseCase: AddTransactionUseCase,
     private val getAllAccountsUseCase: GetAllAccountsUseCase,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
@@ -44,28 +46,36 @@ class AddNewTransactionViewModel @Inject constructor(
     var uiState by mutableStateOf(AddNewTransactionUiState())
         private set
 
+    private var transactionAccountId: Long? = null
+
     init {
         viewModelScope.launch {
-            val accounts = getAllAccountsUseCase().last()
-            uiState = uiState.copy(
-                accounts = accounts,
-                selectedAccount = accounts.firstOrNull()
-            )
+            getAllAccountsUseCase().collectLatest { accounts ->
+                val selectedAccountId = uiState.selectedAccount?.account?.id ?: transactionAccountId
+                uiState = uiState.copy(
+                    accounts = accounts,
+                    selectedAccount = accounts.firstOrNull { it.account.id == selectedAccountId }
+                        ?: accounts.firstOrNull()
+                )
+            }
+        }
 
-            savedStateHandle.get<Long>("id")?.let { id ->
-                if (id >= 0) {
+        savedStateHandle.get<Long>("id")?.let { id ->
+            if (id >= 0) {
+                viewModelScope.launch {
                     transactionRepository.getTransactionById(id).collectLatest { transaction ->
-                        if (transaction != null) {
-                            uiState = uiState.copy(
-                                id = transaction.id,
-                                selectedTabIndex = if (transaction.type == TransactionType.INCOME) 0 else 1,
-                                selectedCategory = Category(),
-                                amount = transaction.amount.formatAmount(),
-                                note = transaction.note ?: "",
-                                showNumpad = true,
-                                selectedAccount = accounts.find { it.account.id == transaction.accountId }
-                            )
-                        }
+                        if (transaction == null) return@collectLatest
+
+                        transactionAccountId = transaction.accountId
+                        uiState = uiState.copy(
+                            id = transaction.id,
+                            selectedTabIndex = if (transaction.type == TransactionType.INCOME) 0 else 1,
+                            selectedCategory = Category(),
+                            amount = transaction.amount.formatAmount(),
+                            note = transaction.note ?: "",
+                            showNumpad = true,
+                            selectedAccount = uiState.accounts.find { it.account.id == transaction.accountId }
+                        )
                     }
                 }
             }
@@ -106,22 +116,34 @@ class AddNewTransactionViewModel @Inject constructor(
     }
 
     fun onAccountSelected(account: AccountWithCurrency) {
-        uiState = uiState.copy(selectedAccount = account)
+        uiState = uiState.copy(
+            selectedAccount = account,
+            isAccountSelectionDialogVisible = false
+        )
+    }
+
+    fun showAccountSelectionDialog() {
+        uiState = uiState.copy(isAccountSelectionDialogVisible = true)
+    }
+
+    fun hideAccountSelectionDialog() {
+        uiState = uiState.copy(isAccountSelectionDialogVisible = false)
     }
 
     private fun saveTransaction() {
         viewModelScope.launch {
+            val selectedAccountId = uiState.selectedAccount?.account?.id ?: return@launch
             var transaction = TransactionEntity(
                 title = "",
                 categoryName = uiState.selectedCategory.label,
                 amount = uiState.amount.toDouble(),
                 type = if (uiState.selectedTabIndex == 0) TransactionType.INCOME else TransactionType.EXPENSE,
                 note = uiState.note,
-                accountId = uiState.selectedAccount?.account?.id ?: 0L,
+                accountId = selectedAccountId,
                 smsId = System.currentTimeMillis()
             )
             if (uiState.id != -1L) transaction = transaction.copy(id = uiState.id)
-            transactionRepository.addTransaction(transaction)
+            addTransactionUseCase(transaction)
             uiState = uiState.copy(
                 showNumpad = false,
                 selectedCategory = Category(),

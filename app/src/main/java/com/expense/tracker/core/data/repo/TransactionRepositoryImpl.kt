@@ -14,7 +14,7 @@ class TransactionRepositoryImpl @Inject constructor(
 ) : TransactionRepository {
 
     override suspend fun addTransaction(transaction: TransactionEntity) {
-//        transactionDao.insert(transaction)
+        transactionDao.insert(transaction)
     }
 
     override suspend fun deleteTransaction(transaction: TransactionEntity) {

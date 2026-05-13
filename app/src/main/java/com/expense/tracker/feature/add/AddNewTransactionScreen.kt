@@ -33,22 +33,21 @@ import androidx.compose.material.icons.filled.EventRepeat
 import androidx.compose.material.icons.outlined.Badge
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CameraAlt
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,6 +67,7 @@ import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
 import com.expense.tracker.navigation.Screen
 import com.expense.tracker.ui.theme.MoneyBudgetExpenseTrackerTheme
+import com.expense.tracker.utils.formatAmount
 import kotlinx.coroutines.launch
 
 @Composable
@@ -99,7 +99,9 @@ fun AddNewTransactionScreen(
             onCategorySelected = viewModel::onCategorySelected,
             onKeyPress = viewModel::onKeyPress,
             onNoteChange = viewModel::onNoteChange,
-            onAccountSelected = viewModel::onAccountSelected
+            onAccountSelected = viewModel::onAccountSelected,
+            onSelectAccountClick = viewModel::showAccountSelectionDialog,
+            onDismissAccountDialog = viewModel::hideAccountSelectionDialog
         )
     }
 }
@@ -113,7 +115,9 @@ private fun AddNewTransactionScreenContainer(
     onCategorySelected: (Category) -> Unit,
     onKeyPress: (String) -> Unit,
     onNoteChange: (String) -> Unit,
-    onAccountSelected: (AccountWithCurrency) -> Unit
+    onAccountSelected: (AccountWithCurrency) -> Unit,
+    onSelectAccountClick: () -> Unit,
+    onDismissAccountDialog: () -> Unit
 ) {
     val pagerState =
         rememberPagerState(initialPage = uiState.selectedTabIndex) { uiState.tabs.size }
@@ -169,9 +173,12 @@ private fun AddNewTransactionScreenContainer(
                 note = uiState.note,
                 accounts = uiState.accounts,
                 selectedAccount = uiState.selectedAccount,
+                showAccountSelectionDialog = uiState.isAccountSelectionDialogVisible,
                 onNoteChange = onNoteChange,
                 onKeyPress = onKeyPress,
-                onAccountSelected = onAccountSelected
+                onAccountSelected = onAccountSelected,
+                onSelectAccountClick = onSelectAccountClick,
+                onDismissAccountDialog = onDismissAccountDialog
             )
         }
     }
@@ -188,7 +195,9 @@ fun AddNewTransactionScreenPreview() {
             onCategorySelected = {},
             onKeyPress = {},
             onNoteChange = {},
-            onAccountSelected = {}
+            onAccountSelected = {},
+            onSelectAccountClick = {},
+            onDismissAccountDialog = {}
         )
     }
 }
@@ -295,17 +304,29 @@ private fun AddAmountScreen(
     note: String,
     accounts: List<AccountWithCurrency>,
     selectedAccount: AccountWithCurrency?,
+    showAccountSelectionDialog: Boolean,
     onNoteChange: (String) -> Unit,
     onKeyPress: (String) -> Unit,
     onAccountSelected: (AccountWithCurrency) -> Unit,
+    onSelectAccountClick: () -> Unit,
+    onDismissAccountDialog: () -> Unit,
     backgroundColor: Color = Color(0xFFF2F3F5)
 ) {
+    if (showAccountSelectionDialog) {
+        SelectAccountDialog(
+            accounts = accounts,
+            selectedAccount = selectedAccount,
+            onDismiss = onDismissAccountDialog,
+            onAccountSelected = onAccountSelected
+        )
+    }
+
     Column(
         modifier = Modifier
             .background(backgroundColor)
             .padding(16.dp)
     ) {
-        AmountHeader(amount, accounts, selectedAccount, onAccountSelected)
+        AmountHeader(amount, selectedAccount, onSelectAccountClick)
         Spacer(Modifier.height(16.dp))
         NoteInput(note, onNoteChange)
         Spacer(Modifier.height(16.dp))
@@ -316,16 +337,18 @@ private fun AddAmountScreen(
 @Composable
 fun AmountHeader(
     amount: String,
-    accounts: List<AccountWithCurrency>,
     selectedAccount: AccountWithCurrency?,
-    onAccountSelected: (AccountWithCurrency) -> Unit
+    onSelectAccountClick: () -> Unit
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        AccountDropdown(accounts, selectedAccount, onAccountSelected)
+        SelectAccountButton(
+            selectedAccount = selectedAccount,
+            onClick = onSelectAccountClick
+        )
 
         Text(
             text = amount, fontSize = 36.sp, fontWeight = FontWeight.Medium
@@ -334,33 +357,83 @@ fun AmountHeader(
 }
 
 @Composable
-fun AccountDropdown(
+fun SelectAccountButton(
+    selectedAccount: AccountWithCurrency?,
+    onClick: () -> Unit
+) {
+    TextButton(onClick = onClick) {
+        Icon(Icons.Outlined.Badge, contentDescription = null)
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(text = selectedAccount?.account?.name ?: "Select Account")
+    }
+}
+
+@Composable
+fun SelectAccountDialog(
     accounts: List<AccountWithCurrency>,
     selectedAccount: AccountWithCurrency?,
+    onDismiss: () -> Unit,
     onAccountSelected: (AccountWithCurrency) -> Unit
 ) {
-    var expanded by remember { mutableStateOf(false) }
-
-    Box {
-        Row(
-            modifier = Modifier.clickable { expanded = true },
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Icon(Icons.Outlined.Badge, contentDescription = null)
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = selectedAccount?.account?.name ?: "Select Account")
-        }
-
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            accounts.forEach { account ->
-                DropdownMenuItem(text = { Text(text = selectedAccount?.account?.name.orEmpty()) }, onClick = {
-                    onAccountSelected(account)
-                    expanded = false
-                })
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Select Account") },
+        text = {
+            Column {
+                if (accounts.isEmpty()) {
+                    Text(
+                        text = "No accounts available",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                } else {
+                    accounts.forEachIndexed { index, account ->
+                        AccountSelectionRow(
+                            account = account,
+                            selected = selectedAccount?.account?.id == account.account.id,
+                            onClick = { onAccountSelected(account) }
+                        )
+                        if (index < accounts.lastIndex) {
+                            HorizontalDivider()
+                        }
+                    }
+                }
             }
+        },
+        confirmButton = {},
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
+}
+
+@Composable
+private fun AccountSelectionRow(
+    account: AccountWithCurrency,
+    selected: Boolean,
+    onClick: () -> Unit
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        RadioButton(selected = selected, onClick = onClick)
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = account.account.name,
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.Medium
+            )
+            Text(
+                text = "${account.account.type} | ${account.currency.symbol}${account.account.balance.formatAmount()}",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
         }
     }
 }

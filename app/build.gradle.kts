@@ -8,13 +8,13 @@ plugins {
 }
 
 android {
-    namespace = "com.expense.tracker"
+    namespace = "com.pm.expense.tracker"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.expense.tracker"
+        applicationId = "com.pm.expense.tracker"
         minSdk = 24
         targetSdk = 36
         versionCode = 1

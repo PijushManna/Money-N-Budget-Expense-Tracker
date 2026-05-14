@@ -17,7 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import com.expense.tracker.R
+import com.pm.expense.tracker.R
 import com.expense.tracker.feature.home.TransactionsViewType
 
 @Composable

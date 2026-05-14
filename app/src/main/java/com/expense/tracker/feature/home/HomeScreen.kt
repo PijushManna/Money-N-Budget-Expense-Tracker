@@ -36,7 +36,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
-import com.expense.tracker.R
+import com.pm.expense.tracker.R
 import com.expense.tracker.feature.common.Footer
 import com.expense.tracker.feature.common.Header
 import com.expense.tracker.feature.common.HeaderConfig
